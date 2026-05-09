@@ -763,8 +763,15 @@
     <div class="news-card">
       <p class="news-date">5 Mayo 2026</p>
       <h3>No estuvo en la Met Gala 2026, pero igual fue tendencia</h3>
-      <p>Chappell eligió no asistir a la Met Gala, manteniendo su perfil bajo desde los shows de marzo. Aun así fue tendencia: su look de Paris Fashion Week apareció en la alfombra roja cuando Chase Sui Wonders usó el mismo diseño de McQueen.</p>
-      <a href="https://www.aol.com/articles/why-chappell-roan-isn-t-023437767.html" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → AOL / Variety</a>
+      <p>Chappell eligió no asistir a la Met Gala. Aun así fue tendencia: su look de Paris Fashion Week apareció en la alfombra roja cuando Chase Sui Wonders usó el mismo diseño de McQueen. Su próxima aparición en vivo será el 13 de mayo en el YouTube Brandcast en Nueva York.</p>
+      <a href="https://www.aol.com/articles/why-chappell-roan-isn-t-023437767.html" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → Variety</a>
+    </div>
+
+    <div class="news-card">
+      <p class="news-date">1 Febrero 2026</p>
+      <h3>Grammys 2026: su vestido de Mugler se volvió el momento más viral de la noche</h3>
+      <p>Chappell llegó a los Grammys 68 con un vestido burdeos custom de Mugler suspendido desde aros en sus pezones, inspirado en la colección couture de Thierry Mugler de 1998. El look se convirtió en el más comentado de la noche. Luego respondió en Instagram: "Giggling porque no creo que sea TAN escandaloso".</p>
+      <a href="https://www.foxnews.com/entertainment/chappell-roan-says-shes-giggling-over-grammys-outfit-controversy-after-debuting-nipple-piercing-dress" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → Fox News / W Magazine</a>
     </div>
 
 
@@ -778,21 +785,56 @@
 <section id="discografia">
   <p class="section-label">✦ Su música</p>
   <h2 class="section-title">Discografía</h2>
-  <div class="disco-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/album/3qonjOSJDEqHKB0yHQUMQf?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/7ejBiONHZBRYNorfkBBnEa?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/2mxe0TnaNKiNJCsQbgLCCZ?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/3YfS47gZcgxOhGFhm4e9gL?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/5r3VWKD5cNQTw0KjsULkns?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/3FeVmId7tHI587HbFqNNUF?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
+  <div class="disco-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.2rem;" id="disco-grid">
   </div>
+
+  <script>
+    const releases = [
+      { name: "The Rise and Fall of a Midwest Princess", year: "2023", type: "Álbum debut", spotify: "https://open.spotify.com/album/3qonjOSJDEqHKB0yHQUMQf", search: "The Rise and Fall of a Midwest Princess Chappell Roan" },
+      { name: "The Subway", year: "2025", type: "Single", spotify: "https://open.spotify.com/track/2SsY5k7UWFqgye3PUMG3Oq", search: "The Subway Chappell Roan" },
+      { name: "The Giver", year: "2025", type: "Single", spotify: "https://open.spotify.com/track/5xHgo5JN0wfsV41HnRaos5", search: "The Giver Chappell Roan" },
+      { name: "Good Luck, Babe!", year: "2024", type: "Single", spotify: "https://open.spotify.com/track/0WbMK4wrZ1wFSty9F7FCgu", search: "Good Luck Babe Chappell Roan" },
+      { name: "Pink Pony Club", year: "2020", type: "Single · 1.2B streams", spotify: "https://open.spotify.com/track/1k2pQc5i348DCHwbn5KTdc", search: "Pink Pony Club Chappell Roan" },
+      { name: "HOT TO GO!", year: "2023", type: "Single", spotify: "https://open.spotify.com/track/4xdBrk0nFZaP54vvZj0yx7", search: "Hot To Go Chappell Roan" },
+    ];
+
+    const grid = document.getElementById('disco-grid');
+
+    releases.forEach(r => {
+      const card = document.createElement('a');
+      card.href = r.spotify;
+      card.target = "_blank";
+      card.rel = "noopener";
+      card.className = "album-card";
+      card.style.textDecoration = "none";
+      card.innerHTML = `
+        <div class="album-placeholder a1" style="position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1a001a;">
+          <img data-search="${r.search}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;">
+        </div>
+        <div style="padding:0.6rem 0.2rem;">
+          <p style="font-family:'Bebas Neue',cursive;font-size:0.9rem;letter-spacing:0.05em;color:var(--cream);line-height:1.2;">${r.name}</p>
+          <p style="font-size:0.65rem;color:rgba(255,248,240,0.4);margin-top:0.2rem;">${r.year} · ${r.type}</p>
+          <p style="font-size:0.6rem;color:#1db954;margin-top:0.2rem;">▶ Escuchar en Spotify</p>
+        </div>
+      `;
+      grid.appendChild(card);
+
+      // Cargar imagen desde iTunes Search API (sin CORS)
+      const img = card.querySelector('img');
+      const q = encodeURIComponent(r.search);
+      fetch(`https://itunes.apple.com/search?term=${q}&media=music&entity=album&limit=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.results && data.results.length > 0) {
+            const url = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+            img.src = url;
+          } else {
+            img.style.display = 'none';
+          }
+        })
+        .catch(() => { img.style.display = 'none'; });
+    });
+  </script>
 </section>
 
 <div class="glitter-line"></div>
