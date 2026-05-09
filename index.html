@@ -825,25 +825,39 @@
 
 <div class="glitter-line"></div>
 
-<!-- Twitter Feed -->
+<!-- About Chappell -->
 <section id="tweets">
   <p class="section-label">✦ Info en tiempo real de Chappell Roan</p>
   <h2 class="section-title">About Chappell</h2>
-  <p style="font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:var(--baby-pink);margin-bottom:2rem;max-width:560px;">
-    Los últimos tweets de <a href="https://x.com/thehouseofroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@thehouseofroan</a> — la cuenta de noticias más completa sobre Chappell Roan.
-  </p>
-  <div style="display:flex;justify-content:center;">
-    <iframe
-      src="https://syndication.twitter.com/srv/timeline-profile/screen-name/thehouseofroan?dnt=true&theme=dark&tweet_limit=5&chrome=nofooter%20noborders"
-      style="border:none;border-radius:12px;width:100%;max-width:680px;min-height:800px;background:#0d0010;"
-      scrolling="yes"
-      allowtransparency="true"
-      title="Tweets de @thehouseofroan">
-    </iframe>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;padding:2rem 0;">
+    <p style="font-family:'Playfair Display',serif;font-style:italic;font-size:1rem;color:var(--baby-pink);text-align:center;max-width:480px;">
+      Las últimas noticias, fotos y actualizaciones sobre Chappell Roan en tiempo real.
+    </p>
+    <a href="https://x.com/thehouseofroan" target="_blank" rel="noopener"
+      style="
+        display:inline-flex;align-items:center;gap:0.75rem;
+        padding:1rem 2.5rem;
+        border-radius:999px;
+        background:linear-gradient(135deg,var(--hot-pink),var(--lilac),var(--electric-blue));
+        color:#fff;
+        font-family:'Bebas Neue',cursive;
+        font-size:1.3rem;
+        letter-spacing:0.12em;
+        text-decoration:none;
+        box-shadow:0 0 30px rgba(255,45,120,0.4), 0 0 60px rgba(192,132,252,0.2);
+        transition:transform 0.2s, box-shadow 0.2s;
+        position:relative;
+        overflow:hidden;
+      "
+      onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 0 40px rgba(255,45,120,0.6), 0 0 80px rgba(192,132,252,0.3)'"
+      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 30px rgba(255,45,120,0.4), 0 0 60px rgba(192,132,252,0.2)'"
+    >
+      <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      @thehouseofroan
+    </a>
+    <p style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,248,240,0.3);">Seguí la cuenta en X / Twitter</p>
   </div>
 </section>
-
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 <div class="glitter-line"></div>
 
@@ -856,17 +870,44 @@
 
   <script>
     const releases = [
-      { name: "The Rise and Fall of a Midwest Princess", year: "2023", type: "Álbum debut", spotify: "https://open.spotify.com/album/3qonjOSJDEqHKB0yHQUMQf", itunesId: "1698723205", entity: "album" },
-      { name: "The Subway", year: "2025", type: "Single", spotify: "https://open.spotify.com/track/2SsY5k7UWFqgye3PUMG3Oq", itunesId: "1831372118", entity: "album" },
-      { name: "The Giver", year: "2025", type: "Single · Country", spotify: "https://open.spotify.com/track/5xHgo5JN0wfsV41HnRaos5", itunesId: "1801197841", entity: "album" },
-      { name: "Good Luck, Babe!", year: "2024", type: "Single", spotify: "https://open.spotify.com/track/0WbMK4wrZ1wFSty9F7FCgu", itunesId: "1791876310", entity: "album" },
-      { name: "Pink Pony Club", year: "2020", type: "Single · 1.2B streams", spotify: "https://open.spotify.com/track/1k2pQc5i348DCHwbn5KTdc", itunesId: "1675173434", entity: "album" },
-      { name: "HOT TO GO!", year: "2023", type: "Single", spotify: "https://open.spotify.com/track/4xdBrk0nFZaP54vvZj0yx7", itunesId: "1698723205", entity: "album" },
+      {
+        name: "The Rise and Fall of a Midwest Princess",
+        year: "2023", type: "Álbum debut",
+        spotify: "https://open.spotify.com/album/3qonjOSJDEqHKB0yHQUMQf",
+        img: "https://www.islandrecords.com/cdn/shop/files/cd_c2248554-12af-491d-9c63-a89f3f94dd59.png?v=1729103457"
+      },
+      {
+        name: "The Subway",
+        year: "2025", type: "Single",
+        spotify: "https://open.spotify.com/track/2SsY5k7UWFqgye3PUMG3Oq",
+        img: "https://shop.iamchappellroan.com/cdn/shop/files/subway2.png?v=1753980141"
+      },
+      {
+        name: "The Giver",
+        year: "2025", type: "Single · Country",
+        spotify: "https://open.spotify.com/track/5xHgo5JN0wfsV41HnRaos5",
+        img: "https://www.amoeba.com/sized-images/max/400/400/uploads/albums/covers/other/5054197953040.jpg"
+      },
+      {
+        name: "Good Luck, Babe!",
+        year: "2024", type: "Single",
+        spotify: "https://open.spotify.com/track/0WbMK4wrZ1wFSty9F7FCgu",
+        img: "https://www.amoeba.com/sized-images/max/400/400/uploads/albums/covers/other/602465582208.jpg"
+      },
+      {
+        name: "Pink Pony Club",
+        year: "2020", type: "Single · 1.2B streams",
+        spotify: "https://open.spotify.com/track/1k2pQc5i348DCHwbn5KTdc",
+        img: "https://www.islandrecords.com/cdn/shop/files/7in.png?v=1725545617"
+      },
+      {
+        name: "HOT TO GO!",
+        year: "2023", type: "Single",
+        spotify: "https://open.spotify.com/track/4xdBrk0nFZaP54vvZj0yx7",
+        img: "https://www.amoeba.com/sized-images/max/400/400/uploads/albums/covers/other/602458321340.jpg"
+      },
     ];
 
-    const grid = document.getElementById('disco-grid');
-
-    // Fallback gradients si falla la imagen
     const gradients = [
       'linear-gradient(135deg,#3d0030,#e91e8c)',
       'linear-gradient(135deg,#001a3d,#00c8ff)',
@@ -876,6 +917,8 @@
       'linear-gradient(135deg,#2d0010,#ff2d78)',
     ];
 
+    const grid = document.getElementById('disco-grid');
+
     releases.forEach((r, i) => {
       const card = document.createElement('a');
       card.href = r.spotify;
@@ -883,39 +926,27 @@
       card.rel = "noopener";
       card.style.cssText = "text-decoration:none;display:block;position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:" + gradients[i] + ";";
 
-      card.innerHTML = `
-        <img alt="${r.name}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;position:absolute;inset:0;">
-        <div style="
-          position:absolute;inset:0;
-          background:linear-gradient(to top, rgba(13,0,16,0.95) 0%, rgba(13,0,16,0.2) 55%, transparent 100%);
-          display:flex;flex-direction:column;justify-content:flex-end;
-          padding:0.9rem 0.8rem;">
-          <span style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--hot-pink);margin-bottom:0.3rem;font-family:'DM Sans',sans-serif;">
-            ${r.year} · ${r.type}
-          </span>
-          <span style="font-family:'Bebas Neue',cursive;font-size:1rem;letter-spacing:0.06em;color:var(--cream);line-height:1.15;">
-            ${r.name}
-          </span>
-          <span style="font-size:0.6rem;color:#1db954;margin-top:0.35rem;">▶ Escuchar en Spotify</span>
-        </div>
+      const img = document.createElement('img');
+      img.src = r.img;
+      img.alt = r.name;
+      img.style.cssText = "width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;position:absolute;inset:0;";
+      img.onerror = function() { this.style.display = 'none'; };
+
+      const overlay = document.createElement('div');
+      overlay.style.cssText = "position:absolute;inset:0;background:linear-gradient(to top,rgba(13,0,16,0.95) 0%,rgba(13,0,16,0.2) 55%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0.9rem 0.8rem;";
+      overlay.innerHTML = `
+        <span style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--hot-pink);margin-bottom:0.3rem;font-family:'DM Sans',sans-serif;">${r.year} · ${r.type}</span>
+        <span style="font-family:'Bebas Neue',cursive;font-size:1rem;letter-spacing:0.06em;color:var(--cream);line-height:1.15;">${r.name}</span>
+        <span style="font-size:0.6rem;color:#1db954;margin-top:0.35rem;">▶ Escuchar en Spotify</span>
       `;
 
-      card.addEventListener('mouseenter', () => card.querySelector('img').style.transform = 'scale(1.05)');
-      card.addEventListener('mouseleave', () => card.querySelector('img').style.transform = 'scale(1)');
+      card.appendChild(img);
+      card.appendChild(overlay);
+
+      card.addEventListener('mouseenter', () => img.style.transform = 'scale(1.05)');
+      card.addEventListener('mouseleave', () => img.style.transform = 'scale(1)');
 
       grid.appendChild(card);
-
-      // Cargar imagen via iTunes Lookup API con ID exacto
-      const img = card.querySelector('img');
-      fetch(`https://itunes.apple.com/lookup?id=${r.itunesId}&entity=${r.entity}&limit=1`)
-        .then(res => res.json())
-        .then(data => {
-          const result = data.results && data.results.find(x => x.artworkUrl100);
-          if (result) {
-            img.src = result.artworkUrl100.replace('100x100bb', '600x600bb');
-          }
-        })
-        .catch(() => {});
     });
   </script>
 </section>
