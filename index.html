@@ -805,34 +805,49 @@
       card.href = r.spotify;
       card.target = "_blank";
       card.rel = "noopener";
-      card.className = "album-card";
-      card.style.textDecoration = "none";
+      card.style.cssText = "text-decoration:none;display:block;position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#1a001a;";
+
       card.innerHTML = `
-        <div class="album-placeholder a1" style="position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#1a001a;">
-          <img data-search="${r.search}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;">
-        </div>
-        <div style="padding:0.6rem 0.2rem;">
-          <p style="font-family:'Bebas Neue',cursive;font-size:0.9rem;letter-spacing:0.05em;color:var(--cream);line-height:1.2;">${r.name}</p>
-          <p style="font-size:0.65rem;color:rgba(255,248,240,0.4);margin-top:0.2rem;">${r.year} · ${r.type}</p>
-          <p style="font-size:0.6rem;color:#1db954;margin-top:0.2rem;">▶ Escuchar en Spotify</p>
+        <img data-search="${r.search}" alt="${r.name}"
+          style="width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;">
+        <div style="
+          position:absolute;inset:0;
+          background:linear-gradient(to top, rgba(13,0,16,0.95) 0%, rgba(13,0,16,0.3) 60%, transparent 100%);
+          display:flex;flex-direction:column;justify-content:flex-end;
+          padding:0.9rem 0.8rem;">
+          <span style="
+            font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;
+            color:var(--hot-pink);margin-bottom:0.3rem;font-family:'DM Sans',sans-serif;">
+            ${r.year} · ${r.type}
+          </span>
+          <span style="
+            font-family:'Bebas Neue',cursive;font-size:1rem;letter-spacing:0.06em;
+            color:var(--cream);line-height:1.15;">
+            ${r.name}
+          </span>
+          <span style="font-size:0.6rem;color:#1db954;margin-top:0.35rem;">▶ Escuchar en Spotify</span>
         </div>
       `;
+
+      card.addEventListener('mouseenter', () => {
+        card.querySelector('img').style.transform = 'scale(1.05)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.querySelector('img').style.transform = 'scale(1)';
+      });
+
       grid.appendChild(card);
 
-      // Cargar imagen desde iTunes Search API (sin CORS)
       const img = card.querySelector('img');
       const q = encodeURIComponent(r.search);
       fetch(`https://itunes.apple.com/search?term=${q}&media=music&entity=album&limit=1`)
         .then(res => res.json())
         .then(data => {
           if (data.results && data.results.length > 0) {
-            const url = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
-            img.src = url;
-          } else {
-            img.style.display = 'none';
+            img.src = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
           }
         })
-        .catch(() => { img.style.display = 'none'; });
+        .catch(() => {});
     });
   </script>
 </section>
