@@ -810,49 +810,71 @@
     async function loadNews() {
       const grid = document.getElementById('news-grid');
       const rssUrl = 'https://news.google.com/rss/search?q=chappell+roan&hl=es&gl=AR&ceid=AR:es';
-      const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&api_key=public&count=8';
 
+      // Intentar con múltiples proxies en orden
+      const proxies = [
+        `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=4`,
+        `https://cors-anywhere.herokuapp.com/${rssUrl}`,
+        `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`,
+      ];
+
+      let items = null;
+
+      // Proxy 1: rss2json
       try {
-        const res = await fetch(proxyUrl);
+        const res = await fetch(proxies[0]);
         const data = await res.json();
+        if (data.items && data.items.length > 0) items = data.items.slice(0, 4);
+      } catch(e) {}
 
-        if (!data.items || data.items.length === 0) throw new Error('Sin resultados');
+      // Proxy 2: allorigins (parsea XML manualmente)
+      if (!items) {
+        try {
+          const res = await fetch(proxies[2]);
+          const data = await res.json();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(data.contents, 'text/xml');
+          const entries = xml.querySelectorAll('item');
+          items = Array.from(entries).slice(0, 4).map(el => ({
+            title: el.querySelector('title')?.textContent || '',
+            link: el.querySelector('link')?.textContent || '#',
+            pubDate: el.querySelector('pubDate')?.textContent || '',
+            description: el.querySelector('description')?.textContent || ''
+          }));
+        } catch(e) {}
+      }
 
-        grid.innerHTML = '';
-
-        data.items.forEach(item => {
-          const date = new Date(item.pubDate);
-          const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
-
-          // Extraer fuente del título (Google News lo incluye al final tras " - ")
-          const titleParts = item.title.split(' - ');
-          const source = titleParts.length > 1 ? titleParts.pop() : '';
-          const title = titleParts.join(' - ');
-
-          // Limpiar descripción de HTML
-          const tmp = document.createElement('div');
-          tmp.innerHTML = item.description || '';
-          const desc = tmp.textContent.slice(0, 120) + '...';
-
-          const card = document.createElement('div');
-          card.className = 'news-card';
-          card.style.cursor = 'pointer';
-          card.onclick = () => window.open(item.link, '_blank');
-          card.innerHTML = `
-            <p class="news-date">${dateStr}</p>
-            <h3>${title}</h3>
-            <p>${desc}</p>
-            <span class="news-tag">${source || 'Leer más'} →</span>
-          `;
-          grid.appendChild(card);
-        });
-
-      } catch (err) {
+      if (!items || items.length === 0) {
         grid.innerHTML = `
           <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">
             No se pudieron cargar las noticias. <a href="https://news.google.com/search?q=chappell+roan" target="_blank" style="color:var(--hot-pink);">Ver en Google News →</a>
           </div>`;
+        return;
       }
+
+      grid.innerHTML = '';
+      items.forEach(item => {
+        const date = new Date(item.pubDate);
+        const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+        const titleParts = item.title.split(' - ');
+        const source = titleParts.length > 1 ? titleParts.pop() : '';
+        const title = titleParts.join(' - ');
+        const tmp = document.createElement('div');
+        tmp.innerHTML = item.description || '';
+        const desc = (tmp.textContent || '').slice(0, 120) + '...';
+
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.style.cursor = 'pointer';
+        card.onclick = () => window.open(item.link, '_blank');
+        card.innerHTML = `
+          <p class="news-date">${dateStr}</p>
+          <h3>${title}</h3>
+          <p>${desc}</p>
+          <span class="news-tag">${source || 'Leer más'} →</span>
+        `;
+        grid.appendChild(card);
+      });
     }
 
     loadNews();
