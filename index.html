@@ -800,78 +800,36 @@
   <p class="section-label">✦ Últimas noticias</p>
   <h2 class="section-title">Noticias</h2>
   <div class="news-grid" id="news-grid">
-    <!-- Las noticias se cargan dinámicamente desde Google News RSS -->
-    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;letter-spacing:0.1em;">
-      Cargando noticias...
+
+    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.aceshowbiz.com/news/view/00258059.html','_blank')">
+      <p class="news-date">19 de mayo de 2026</p>
+      <h3>Chappell Roan recibirá el Elton John Impact Award 2026</h3>
+      <p>Chappell fue elegida como una de las seis figuras LGBTQ+ honoradas en los Elton John Impact Awards 2026, por su expresión artística y por fundar The Midwest Princess Project, que apoya a jóvenes transgénero. El evento se emite el 1 de junio en iHeartRadio.</p>
+      <span class="news-tag">AceShowbiz →</span>
     </div>
+
+    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://variety.com/2026/tv/news/youtube-brandcast-2026-upfront-trevor-noah-chappell-roan-1236703937/','_blank')">
+      <p class="news-date">13 de mayo de 2026</p>
+      <h3>Se presentó en el YouTube Brandcast en Lincoln Center, New York</h3>
+      <p>Chappell fue la artista principal del YouTube Brandcast 2026 en el Lincoln Center de Nueva York, conducido por Trevor Noah. Su primera gran presentación en vivo del año ante más de 244 millones de espectadores de YouTube en EE.UU.</p>
+      <span class="news-tag">Variety →</span>
+    </div>
+
+    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.aol.com/articles/why-chappell-roan-isn-t-023437767.html','_blank')">
+      <p class="news-date">5 de mayo de 2026</p>
+      <h3>No estuvo en la Met Gala 2026, pero igual fue tendencia</h3>
+      <p>Chappell eligió no asistir a la Met Gala 2026, manteniendo perfil bajo desde sus shows en São Paulo y Santiago en marzo. Aun así fue tendencia cuando Chase Sui Wonders usó el mismo diseño de McQueen que ella lució en Paris Fashion Week.</p>
+      <span class="news-tag">AOL / Variety →</span>
+    </div>
+
+    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.foxnews.com/entertainment/chappell-roan-says-shes-giggling-over-grammys-outfit-controversy-after-debuting-nipple-piercing-dress','_blank')">
+      <p class="news-date">1 de febrero de 2026</p>
+      <h3>Grammys 2026: su vestido de Mugler fue el momento más viral de la noche</h3>
+      <p>Chappell llegó a los Grammys 68 con un vestido burdeos custom de Mugler inspirado en la colección couture de Thierry Mugler de 1998. Luego respondió en Instagram: "Giggling porque no creo que sea TAN escandaloso".</p>
+      <span class="news-tag">Fox News →</span>
+    </div>
+
   </div>
-
-  <script>
-    async function loadNews() {
-      const grid = document.getElementById('news-grid');
-
-      // Usar múltiples feeds RSS que SÍ permiten CORS via proxy
-      const feeds = [
-        'https://www.rollingstone.com/t/chappell-roan/feed/',
-        'https://www.billboard.com/author/chappell-roan/feed/',
-      ];
-
-      const proxy = 'https://api.allorigins.win/get?url=';
-      let items = [];
-
-      for (const feed of feeds) {
-        if (items.length >= 4) break;
-        try {
-          const res = await fetch(proxy + encodeURIComponent(feed));
-          const data = await res.json();
-          const parser = new DOMParser();
-          const xml = parser.parseFromString(data.contents, 'text/xml');
-          const entries = Array.from(xml.querySelectorAll('item'));
-          entries.slice(0, 4 - items.length).forEach(el => {
-            items.push({
-              title: el.querySelector('title')?.textContent || '',
-              link: el.querySelector('link')?.textContent || '#',
-              pubDate: el.querySelector('pubDate')?.textContent || '',
-              description: el.querySelector('description')?.textContent || ''
-            });
-          });
-        } catch(e) {}
-      }
-
-      if (items.length === 0) {
-        grid.innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">
-            No se pudieron cargar las noticias. 
-            <a href="https://www.rollingstone.com/t/chappell-roan/" target="_blank" style="color:var(--hot-pink);">Ver en Rolling Stone →</a>
-          </div>`;
-        return;
-      }
-
-      grid.innerHTML = '';
-      items.slice(0, 4).forEach(item => {
-        const date = new Date(item.pubDate);
-        const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
-        const tmp = document.createElement('div');
-        tmp.innerHTML = item.description || '';
-        const desc = (tmp.textContent || '').slice(0, 130) + '...';
-        const source = item.link.includes('rollingstone') ? 'Rolling Stone' : 'Billboard';
-
-        const card = document.createElement('div');
-        card.className = 'news-card';
-        card.style.cursor = 'pointer';
-        card.onclick = () => window.open(item.link, '_blank');
-        card.innerHTML = `
-          <p class="news-date">${dateStr}</p>
-          <h3>${item.title}</h3>
-          <p>${desc}</p>
-          <span class="news-tag">${source} →</span>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    loadNews();
-  </script>
 </section>
 
 <div class="glitter-line"></div>
@@ -884,6 +842,54 @@
     <!-- start feedwind code -->
     <script type="text/javascript" src="https://feed.mikle.com/js/fw-loader.js" preloader-text="Loading" data-fw-param="178243/"></script>
     <!-- end feedwind code -->
+  </div>
+
+  <!-- Botones de redes -->
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-top:2rem;">
+
+    <a href="https://x.com/thehouseofroan" target="_blank" rel="noopener"
+      style="
+        display:inline-flex;align-items:center;gap:0.7rem;
+        padding:0.85rem 2rem;
+        border-radius:999px;
+        background:linear-gradient(135deg,#0f0f0f,#1a1a2e);
+        border:1.5px solid rgba(255,255,255,0.15);
+        color:#fff;
+        font-family:'DM Sans',sans-serif;
+        font-size:0.85rem;
+        font-weight:500;
+        letter-spacing:0.05em;
+        text-decoration:none;
+        box-shadow:0 0 20px rgba(255,255,255,0.05);
+        transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;
+      "
+      onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='rgba(255,255,255,0.4)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.4)'"
+      onmouseout="this.style.transform='translateY(0)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.boxShadow='0 0 20px rgba(255,255,255,0.05)'">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      @thehouseofroan
+    </a>
+
+    <a href="https://www.instagram.com/maisonroan.arg/" target="_blank" rel="noopener"
+      style="
+        display:inline-flex;align-items:center;gap:0.7rem;
+        padding:0.85rem 2rem;
+        border-radius:999px;
+        background:linear-gradient(135deg,#833ab4,#e91e8c,#ff6b35);
+        color:#fff;
+        font-family:'DM Sans',sans-serif;
+        font-size:0.85rem;
+        font-weight:500;
+        letter-spacing:0.05em;
+        text-decoration:none;
+        box-shadow:0 0 20px rgba(233,30,140,0.3);
+        transition:transform 0.2s,box-shadow 0.2s;
+      "
+      onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 30px rgba(233,30,140,0.5)'"
+      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 20px rgba(233,30,140,0.3)'">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @maisonroan.arg
+    </a>
+
   </div>
 </section>
 
