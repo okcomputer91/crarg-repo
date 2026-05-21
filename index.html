@@ -799,38 +799,64 @@
 <section id="noticias">
   <p class="section-label">✦ Últimas noticias</p>
   <h2 class="section-title">Noticias</h2>
-  <div class="news-grid">
-
-    <div class="news-card">
-      <p class="news-date">13 Mayo 2026</p>
-      <h3>Sube al escenario del YouTube Brandcast en Lincoln Center, New York</h3>
-      <p>Chappell es la artista principal del YouTube Brandcast 2026 el 13 de mayo en el Lincoln Center de Nueva York. Su primera gran presentación en vivo del año, en el evento más importante de YouTube para anunciantes.</p>
-      <a href="https://blog.youtube/news-and-events/youtube-brandcast-2026-lineup/" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → YouTube Blog</a>
+  <div class="news-grid" id="news-grid">
+    <!-- Las noticias se cargan dinámicamente desde Google News RSS -->
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;letter-spacing:0.1em;">
+      Cargando noticias...
     </div>
-
-    <div class="news-card">
-      <p class="news-date">5 Mayo 2026</p>
-      <h3>No estuvo en la Met Gala 2026, pero igual fue tendencia</h3>
-      <p>Chappell eligió no asistir a la Met Gala 2026. Aun así fue tendencia: Chase Sui Wonders usó el mismo diseño de McQueen que ella había lucido en Paris Fashion Week.</p>
-      <a href="https://www.newsbreak.com/news/4631790715849-why-chappell-roan-isn-t-at-the-2026-met-gala" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → NewsBreak</a>
-    </div>
-
-    <div class="news-card">
-      <p class="news-date">1 Febrero 2026</p>
-      <h3>Grammys 2026: su vestido de Mugler fue el momento más viral de la noche</h3>
-      <p>Chappell llegó a los Grammys 68 con un vestido burdeos custom de Mugler inspirado en la colección couture de Thierry Mugler de 1998. Luego respondió en Instagram: "Giggling porque no creo que sea TAN escandaloso".</p>
-      <a href="https://www.foxnews.com/entertainment/chappell-roan-says-shes-giggling-over-grammys-outfit-controversy-after-debuting-nipple-piercing-dress" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → Fox News</a>
-    </div>
-
-    <div class="news-card">
-      <p class="news-date">31 Diciembre 2025</p>
-      <h3>"Este fue el año más difícil de mi vida" — carta abierta a sus fans</h3>
-      <p>En su newsletter personal, Chappell reveló que casi cancela la gira de EE.UU. Sobre "The Giver" dijo: "Fue un riesgo muy grande pero necesario para el carácter de mi proyecto".</p>
-      <a href="https://www.rollingstone.com/music/music-news/chappell-roan-reflects-on-2025-nearly-canceling-tour-1235492978/" target="_blank" rel="noopener" class="news-tag" style="text-decoration:none;cursor:pointer;">Leer más → Rolling Stone</a>
-    </div>
-
   </div>
 
+  <script>
+    async function loadNews() {
+      const grid = document.getElementById('news-grid');
+      const rssUrl = 'https://news.google.com/rss/search?q=chappell+roan&hl=es&gl=AR&ceid=AR:es';
+      const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl) + '&api_key=public&count=8';
+
+      try {
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
+
+        if (!data.items || data.items.length === 0) throw new Error('Sin resultados');
+
+        grid.innerHTML = '';
+
+        data.items.forEach(item => {
+          const date = new Date(item.pubDate);
+          const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+          // Extraer fuente del título (Google News lo incluye al final tras " - ")
+          const titleParts = item.title.split(' - ');
+          const source = titleParts.length > 1 ? titleParts.pop() : '';
+          const title = titleParts.join(' - ');
+
+          // Limpiar descripción de HTML
+          const tmp = document.createElement('div');
+          tmp.innerHTML = item.description || '';
+          const desc = tmp.textContent.slice(0, 120) + '...';
+
+          const card = document.createElement('div');
+          card.className = 'news-card';
+          card.style.cursor = 'pointer';
+          card.onclick = () => window.open(item.link, '_blank');
+          card.innerHTML = `
+            <p class="news-date">${dateStr}</p>
+            <h3>${title}</h3>
+            <p>${desc}</p>
+            <span class="news-tag">${source || 'Leer más'} →</span>
+          `;
+          grid.appendChild(card);
+        });
+
+      } catch (err) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">
+            No se pudieron cargar las noticias. <a href="https://news.google.com/search?q=chappell+roan" target="_blank" style="color:var(--hot-pink);">Ver en Google News →</a>
+          </div>`;
+      }
+    }
+
+    loadNews();
+  </script>
 </section>
 
 <div class="glitter-line"></div>
