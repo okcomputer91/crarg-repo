@@ -942,36 +942,61 @@
   <p class="section-label">✦ Últimas noticias</p>
   <h2 class="section-title">Noticias</h2>
   <div class="news-grid" id="news-grid">
-
-    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.aceshowbiz.com/news/view/00258059.html','_blank')">
-      <p class="news-date">19 de mayo de 2026</p>
-      <h3>Chappell Roan recibirá el Elton John Impact Award 2026</h3>
-      <p>Chappell fue elegida como una de las seis figuras LGBTQ+ honoradas en los Elton John Impact Awards 2026, por su expresión artística y por fundar The Midwest Princess Project, que apoya a jóvenes transgénero. El evento se emite el 1 de junio en iHeartRadio.</p>
-      <span class="news-tag">AceShowbiz →</span>
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;letter-spacing:0.1em;">
+      Cargando noticias...
     </div>
-
-    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://variety.com/2026/tv/news/youtube-brandcast-2026-upfront-trevor-noah-chappell-roan-1236703937/','_blank')">
-      <p class="news-date">13 de mayo de 2026</p>
-      <h3>Se presentó en el YouTube Brandcast en Lincoln Center, New York</h3>
-      <p>Chappell fue la artista principal del YouTube Brandcast 2026 en el Lincoln Center de Nueva York, conducido por Trevor Noah. Su primera gran presentación en vivo del año ante más de 244 millones de espectadores de YouTube en EE.UU.</p>
-      <span class="news-tag">Variety →</span>
-    </div>
-
-    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.aol.com/articles/why-chappell-roan-isn-t-023437767.html','_blank')">
-      <p class="news-date">5 de mayo de 2026</p>
-      <h3>No estuvo en la Met Gala 2026, pero igual fue tendencia</h3>
-      <p>Chappell eligió no asistir a la Met Gala 2026, manteniendo perfil bajo desde sus shows en São Paulo y Santiago en marzo. Aun así fue tendencia cuando Chase Sui Wonders usó el mismo diseño de McQueen que ella lució en Paris Fashion Week.</p>
-      <span class="news-tag">AOL / Variety →</span>
-    </div>
-
-    <div class="news-card" style="cursor:pointer;" onclick="window.open('https://www.foxnews.com/entertainment/chappell-roan-says-shes-giggling-over-grammys-outfit-controversy-after-debuting-nipple-piercing-dress','_blank')">
-      <p class="news-date">1 de febrero de 2026</p>
-      <h3>Grammys 2026: su vestido de Mugler fue el momento más viral de la noche</h3>
-      <p>Chappell llegó a los Grammys 68 con un vestido burdeos custom de Mugler inspirado en la colección couture de Thierry Mugler de 1998. Luego respondió en Instagram: "Giggling porque no creo que sea TAN escandaloso".</p>
-      <span class="news-tag">Fox News →</span>
-    </div>
-
   </div>
+
+  <script>
+    const CONTENTFUL_SPACE   = 'nsr3wsblrual';
+    const CONTENTFUL_TOKEN   = 'LIJNJDuF3VfoQiaJc3mfl3pH2oPRgK9G5elo6z-eaXE';
+    const CONTENTFUL_URL     = `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE}/entries?content_type=noticia&order=-fields.fecha&limit=4&access_token=${CONTENTFUL_TOKEN}`;
+
+    async function loadNoticias() {
+      const grid = document.getElementById('news-grid');
+
+      try {
+        const res  = await fetch(CONTENTFUL_URL);
+        const data = await res.json();
+
+        if (!data.items || data.items.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">No hay noticias disponibles aún.</div>`;
+          return;
+        }
+
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+        grid.innerHTML = '';
+        data.items.forEach(item => {
+          const f = item.fields;
+
+          // Formatear fecha
+          let dateStr = f.fecha || '';
+          if (dateStr) {
+            const d = new Date(dateStr);
+            dateStr = `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+          }
+
+          const card = document.createElement('div');
+          card.className = 'news-card';
+          card.style.cursor = 'pointer';
+          card.onclick = () => window.open(f.url, '_blank');
+          card.innerHTML = `
+            <p class="news-date">${dateStr}</p>
+            <h3>${f.titulo}</h3>
+            <p>${f.resumen}</p>
+            <span class="news-tag">${f.fuente} →</span>
+          `;
+          grid.appendChild(card);
+        });
+
+      } catch(err) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">No se pudieron cargar las noticias.</div>`;
+      }
+    }
+
+    loadNoticias();
+  </script>
 </section>
 
 <div class="glitter-line"></div>
@@ -1427,5 +1452,17 @@
   });
 </script>
 
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", user => {
+        if (!user) {
+          window.netlifyIdentity.on("login", () => {
+            document.location.href = "/admin/";
+          });
+        }
+      });
+    }
+  </script>
 </body>
 </html>
