@@ -1020,11 +1020,41 @@
 <section id="tweets">
   <p class="section-label">✦ Info en tiempo real de Chappell Roan</p>
   <h2 class="section-title">About Chappell</h2>
-  <div style="max-width:680px;margin:0 auto;">
+  <div style="max-width:900px;margin:0 auto;position:relative;">
     <!-- Elfsight Twitter Feed | Untitled Twitter Feed -->
     <script src="https://elfsightcdn.com/platform.js" async></script>
     <div class="elfsight-app-f53fbab1-5fd4-4eb9-b9fa-0fdd94fe1d35" data-elfsight-app-lazy></div>
   </div>
+  <style>
+    /* Intentos de ocultar badge Elfsight */
+    .eapps-link { display:none !important; }
+    .eapps-twitter-feed-footer { display:none !important; }
+    [class^="eapps-link"] { display:none !important; }
+    [class*="footer"] .eapps-link { display:none !important; }
+    .eapps-twitter-feed .eapps-link { display:none !important; }
+  </style>
+  <script>
+    // Intento via JS — busca el badge cada 500ms y lo oculta
+    const hideBadge = setInterval(() => {
+      // Buscar en el DOM normal
+      document.querySelectorAll('a[href*="elfsight"]').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.querySelectorAll('[class*="eapps-link"]').forEach(el => {
+        el.style.display = 'none';
+      });
+      // Buscar dentro de shadow roots
+      document.querySelectorAll('*').forEach(el => {
+        if (el.shadowRoot) {
+          el.shadowRoot.querySelectorAll('a[href*="elfsight"], [class*="eapps-link"], [class*="branding"]').forEach(b => {
+            b.style.display = 'none';
+          });
+        }
+      });
+    }, 500);
+    // Parar después de 15 segundos
+    setTimeout(() => clearInterval(hideBadge), 15000);
+  </script>
 
   <!-- Botones de redes -->
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-top:2rem;">
