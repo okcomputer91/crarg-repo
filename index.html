@@ -999,7 +999,7 @@
   <script>
     const CONTENTFUL_SPACE   = 'nsr3wsblrual';
     const CONTENTFUL_TOKEN   = 'LIJNJDuF3VfoQiaJc3mfl3pH2oPRgK9G5elo6z-eaXE';
-    const CONTENTFUL_URL     = `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE}/entries?content_type=noticia&order=-fields.fecha&limit=4&access_token=${CONTENTFUL_TOKEN}`;
+    const CONTENTFUL_URL     = `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE}/entries?content_type=noticia&order=-fields.fecha&limit=4&include=2&access_token=${CONTENTFUL_TOKEN}`;
 
     async function loadNoticias() {
       const grid = document.getElementById('news-grid');
@@ -1011,6 +1011,14 @@
         if (!data.items || data.items.length === 0) {
           grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">No hay noticias disponibles aún.</div>`;
           return;
+        }
+
+        // Mapa de assets (videos/imágenes) incluidos en la respuesta
+        const assets = {};
+        if (data.includes && data.includes.Asset) {
+          data.includes.Asset.forEach(a => {
+            assets[a.sys.id] = a.fields.file;
+          });
         }
 
         const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -1026,15 +1034,34 @@
             dateStr = `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
           }
 
+          // Detectar video (campo tipo Media de Contentful)
+          let videoHTML = '';
+          if (f.video && f.video.sys && f.video.sys.id) {
+            const asset = assets[f.video.sys.id];
+            if (asset && asset.url) {
+              const videoUrl = asset.url.startsWith('//') ? 'https:' + asset.url : asset.url;
+              videoHTML = `
+                <div style="margin:0.8rem 0;border-radius:8px;overflow:hidden;">
+                  <video controls preload="metadata" style="width:100%;border-radius:8px;display:block;background:#000;">
+                    <source src="${videoUrl}" type="${asset.contentType || 'video/mp4'}">
+                    Tu navegador no soporta el video.
+                  </video>
+                </div>`;
+            }
+          }
+
           const card = document.createElement('div');
           card.className = 'news-card';
-          card.style.cursor = 'pointer';
-          card.onclick = () => window.open(f.url, '_blank');
+          if (!videoHTML) {
+            card.style.cursor = 'pointer';
+            card.onclick = () => window.open(f.url, '_blank');
+          }
           card.innerHTML = `
             <p class="news-date">${dateStr}</p>
             <h3>${f.titulo}</h3>
+            ${videoHTML}
             <p>${f.resumen}</p>
-            <span class="news-tag">${f.fuente} →</span>
+            <a href="${f.url}" target="_blank" rel="noopener" style="text-decoration:none;"><span class="news-tag">${f.fuente} →</span></a>
           `;
           grid.appendChild(card);
         });
