@@ -271,7 +271,7 @@
       font-family: 'Bebas Neue', cursive;
       font-size: 1.6rem;
       letter-spacing: 0.12em;
-      background: linear-gradient(90deg, #ff6b6b 0%, #ffa94d 18%, #ffe066 34%, #69db7c 50%, #74c0fc 68%, #9775fa 84%, #f783ac 100%);
+      background: linear-gradient(90deg, #D52D00 0%, #EF7627 17%, #FF9A56 33%, #FFFFFF 50%, #D162A4 67%, #B55690 83%, #A30262 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -363,11 +363,12 @@
       font-family: 'Playfair Display', serif;
       font-style: italic;
       font-size: clamp(1rem, 2.5vw, 1.5rem);
-      background: linear-gradient(90deg, #FF0018, #FF8C00, #FFD700, #008026, #004DFF, #750787);
+      background: linear-gradient(90deg, #ffffff, #fbe9ef, #ffffff, #eaf4ff, #ffffff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-top: 1.2rem;
+      text-shadow: 0 0 18px rgba(255,255,255,0.15);
       animation: fadeUp 1s 0.2s ease both;
     }
 
@@ -958,25 +959,10 @@
   <div class="hero-bg"></div>
   <div class="hero-stars"></div>
 
-  <p class="hero-eyebrow">✦ Maison Roan · Tu portal de noticias favorito de Chappell Roan en Argentina ✦</p>
+  <p class="hero-eyebrow">✦ <span style="background:linear-gradient(90deg,#D52D00,#EF7627,#FF9A56,#FFFFFF,#D162A4,#B55690,#A30262);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:600;">Maison Roan</span> · Tu portal de noticias favorito de Chappell Roan en Argentina ✦</p>
   <h1 class="hero-title">CHAPPELL<br>ROAN</h1>
   <p class="hero-subtitle">The Midwest Princess</p>
   <div class="hero-badge">⋆ Good Luck Babe ⋆ Hot to Go ⋆ Pink Pony Club ⋆</div>
-
-  <div style="margin-top:1.5rem;animation:fadeUp 1.2s 0.4s ease both;display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;">
-    <p style="
-      font-family:'Playfair Display',serif;
-      font-style:italic;
-      font-size:clamp(1.1rem,2.5vw,1.6rem);
-      background:linear-gradient(90deg,#ff6b6b,#ffa94d,#ffe066,#69db7c,#74c0fc,#9775fa,#f783ac);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-      letter-spacing:0.05em;
-      margin:0;
-    ">Happy Pride Month · Feliz mes del orgullo!</p>
-    <span style="font-size:clamp(1.1rem,2.5vw,1.6rem);">🏳️‍🌈</span>
-  </div>
 
   <div class="hero-scroll">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -1262,7 +1248,7 @@
 
 <!-- Shows -->
 <section id="shows">
-  <p class="section-label">✦ Historial de fechas · Tour 2025–2026</p>
+  <p class="section-label">✦ Fechas en vivo · Shows &amp; festivales</p>
   <h2 class="section-title">Shows</h2>
 
   <div style="background:linear-gradient(135deg,rgba(255,45,120,0.12),rgba(0,200,255,0.08));border:1px solid rgba(255,45,120,0.3);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:2rem;display:flex;align-items:center;gap:1rem;">
@@ -1272,6 +1258,23 @@
       <p style="font-size:0.72rem;color:rgba(255,248,240,0.5);">Seguí las redes oficiales de Chappell para ser la primera en enterarte de nuevas fechas cuando se anuncien.</p>
     </div>
   </div>
+
+  <p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--baby-pink);margin:0 0 1.2rem;">Próxima presentación · Festival</p>
+
+  <div class="shows-list" style="margin-bottom:2.5rem;">
+
+    <div class="show-row" style="border:1px solid rgba(255,45,120,0.35);background:linear-gradient(135deg,rgba(255,45,120,0.08),rgba(0,200,255,0.05));">
+      <div class="show-date">29 AGO<br><small style="font-size:0.7rem;color:rgba(255,248,240,0.4)">2026</small></div>
+      <div class="show-info">
+        <h4>Daisy Chain Fields · Great Park</h4>
+        <p>Irvine, California 🇺🇸 · Parte del line-up del festival benéfico all-women de Olivia Rodrigo</p>
+      </div>
+      <a href="https://www.daisychainfields.com/" target="_blank" rel="noopener" class="show-btn">Info →</a>
+    </div>
+
+  </div>
+
+  <p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,248,240,0.3);margin:0 0 1.2rem;">Historial del tour · Visions of Damsels</p>
 
   <div class="shows-list">
 
