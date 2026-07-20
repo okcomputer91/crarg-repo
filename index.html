@@ -369,6 +369,61 @@
       to { opacity: 0.25; }
     }
 
+    .eyebrow-wrap {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .subtitle-wrap {
+      position: relative;
+      display: inline-block;
+      text-align: center;
+      margin-top: 1.2rem;
+    }
+    .badge-wrap {
+      position: relative;
+      display: inline-block;
+      margin-top: 2.5rem;
+    }
+    .gecko-run {
+      position: absolute;
+      left: 0;
+      bottom: 100%;
+      margin-bottom: 3px;
+      width: 66px;
+      z-index: 5;
+      pointer-events: none;
+      will-change: left, transform;
+      animation: geckoRoundTrip 9s linear infinite;
+    }
+    .gecko-inner {
+      animation: geckoScurry 0.16s linear infinite;
+      transform-origin: center;
+    }
+    .gecko-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 6px rgba(88,226,58,0.5)) drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+    }
+    @keyframes geckoRoundTrip {
+      0%    { left: 0; transform: scaleX(1); }
+      6%    { left: 0; transform: scaleX(1); }
+      44%   { left: calc(100% - 66px); transform: scaleX(1); }
+      50%   { left: calc(100% - 66px); transform: scaleX(-1); }
+      56%   { left: calc(100% - 66px); transform: scaleX(-1); }
+      94%   { left: 0; transform: scaleX(-1); }
+      100%  { left: 0; transform: scaleX(1); }
+    }
+    @keyframes geckoScurry {
+      0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+      50%      { transform: translateY(-2px) rotate(1.5deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .gecko-run { display: none; }
+    }
+
     .hero-eyebrow {
       font-size: 0.7rem;
       letter-spacing: 0.35em;
@@ -400,14 +455,16 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-top: 1.2rem;
+      margin-top: 0;
+      position: relative;
+      z-index: 1;
       text-shadow: 0 0 18px rgba(255,255,255,0.15);
       animation: fadeUp 1s 0.2s ease both;
     }
 
     .hero-badge {
       display: inline-block;
-      margin-top: 2.5rem;
+      margin-top: 0;
       padding: 0.6rem 2rem;
       border: 1.5px solid var(--hot-pink);
       border-radius: 999px;
@@ -992,11 +1049,66 @@
   <div class="hero-bg"></div>
   <div class="hero-stars"></div>
 
-  <p class="hero-eyebrow">✦ Maison Roan · Tu portal de noticias favorito de Chappell Roan en Argentina ✦</p>
+  <div class="eyebrow-wrap">
+    <p class="hero-eyebrow">✦ Maison Roan · Tu portal de noticias favorito de Chappell Roan en Argentina ✦</p>
+  </div>
   <h1 class="hero-title">CHAPPELL<br>ROAN</h1>
-  <p class="hero-subtitle">The Midwest Princess</p>
-  <div class="hero-badge">⋆ Good Luck Babe ⋆ Hot to Go ⋆ Pink Pony Club ⋆</div>
-
+  <div class="subtitle-wrap">
+    <p class="hero-subtitle">The Midwest Princess</p>
+    <div class="badge-wrap">
+    <div class="gecko-run" aria-hidden="true">
+      <div class="gecko-inner">
+        <svg class="gecko-svg" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="geckoGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a6ff6b"/>
+              <stop offset="55%" stop-color="#57e23a"/>
+              <stop offset="100%" stop-color="#249b41"/>
+            </linearGradient>
+          </defs>
+          <g fill="#2a9e46" stroke="#1c8a3c" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M106,46 C108,55 106,61 101,65 C104,66 108,64 110,60 C112,55 112,50 111,46 Z"/>
+            <path d="M60,46 C56,56 54,63 49,67 C53,67 58,65 61,60 C64,54 65,50 66,46 Z"/>
+          </g>
+          <path d="M50,42 C 34,42 15,48 3,57 C 1,59 3,62 6,60 C 20,54 34,50 50,50 Z" fill="url(#geckoGrad)" stroke="#1c8a3c" stroke-width="2" stroke-linejoin="round"/>
+          <g fill="#2fa844" stroke="#1c8a3c" stroke-width="1.2" stroke-linejoin="round">
+            <path d="M124,32 L127,22 L131,32 Z"/>
+            <path d="M112,32 L115,23 L119,33 Z"/>
+            <path d="M100,33 L103,25 L107,34 Z"/>
+            <path d="M88,34 L91,27 L95,35 Z"/>
+            <path d="M76,37 L79,31 L83,38 Z"/>
+            <path d="M64,39 L66,34 L70,40 Z"/>
+            <path d="M52,41 L54,37 L57,42 Z"/>
+            <path d="M40,44 L42,41 L45,45 Z"/>
+          </g>
+          <path d="M128,46 C130,55 137,57 141,52 C139,49 136,47 133,46 Z" fill="url(#geckoGrad)" stroke="#1c8a3c" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M140,41 C136,32 125,30 116,33 C104,30 88,31 74,37 C60,35 50,38 45,44 C50,51 60,51 74,46 C88,50 104,49 116,45 C124,48 134,49 140,41 Z" fill="url(#geckoGrad)" stroke="#1c8a3c" stroke-width="2" stroke-linejoin="round"/>
+          <g fill="url(#geckoGrad)" stroke="#1c8a3c" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M112,45 C114,54 113,61 108,65 C110,66 114,65 116,61 C118,55 117,49 116,45 Z"/>
+            <path d="M66,44 C68,53 67,61 61,66 C63,67 68,66 70,61 C73,54 72,49 70,44 Z"/>
+          </g>
+          <g stroke="#1c8a3c" stroke-width="1.6" stroke-linecap="round">
+            <line x1="108" y1="65" x2="104" y2="69"/>
+            <line x1="110" y1="66" x2="109" y2="70"/>
+            <line x1="112" y1="65" x2="115" y2="69"/>
+            <line x1="61" y1="66" x2="56" y2="70"/>
+            <line x1="63" y1="67" x2="62" y2="71"/>
+            <line x1="66" y1="66" x2="69" y2="70"/>
+          </g>
+          <g fill="#2b9e3f" opacity="0.5">
+            <circle cx="96" cy="38" r="2.4"/>
+            <circle cx="82" cy="40" r="2.2"/>
+            <circle cx="68" cy="42" r="2"/>
+          </g>
+          <circle cx="130" cy="37" r="2.7" fill="#0d0010"/>
+          <circle cx="130.9" cy="36.1" r="0.9" fill="#fff"/>
+          <circle cx="137" cy="40" r="1" fill="#0d0010"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hero-badge">⋆ Good Luck Babe ⋆ Hot to Go ⋆ Pink Pony Club ⋆</div>
+    </div>
+  </div>
   <div class="hero-scroll">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     scroll
