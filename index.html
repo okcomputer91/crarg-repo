@@ -310,6 +310,34 @@
 
     .nav-links a:hover { color: var(--electric-blue); }
 
+    .lang-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-left: 1.6rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid rgba(255,45,120,0.4);
+      border-radius: 999px;
+      background: rgba(255,45,120,0.08);
+      color: var(--cream);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      font-family: inherit;
+    }
+    .lang-toggle:hover {
+      background: rgba(255,45,120,0.18);
+      border-color: var(--hot-pink);
+      transform: translateY(-1px);
+    }
+    .lang-toggle .lang-flag { font-size: 1rem; line-height: 1; }
+    @media (max-width: 768px) {
+      .lang-toggle { margin-left: auto; margin-right: 0.8rem; }
+    }
+
     /* ── HERO ── */
     #hero {
       position: relative;
@@ -983,6 +1011,9 @@
     <li><a href="#videos">Videos</a></li>
     <li><a href="#redes">Redes</a></li>
   </ul>
+  <button class="lang-toggle" onclick="toggleLang()" aria-label="Switch language / Cambiar idioma">
+    <span class="lang-flag" id="lang-flag">🇬🇧</span><span id="lang-label">EN</span>
+  </button>
   <div class="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
   </div>
@@ -1024,42 +1055,72 @@
   <script>
     const CONTENTFUL_SPACE   = 'nsr3wsblrual';
     const CONTENTFUL_TOKEN   = 'LIJNJDuF3VfoQiaJc3mfl3pH2oPRgK9G5elo6z-eaXE';
-    const CONTENTFUL_URL     = `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE}/entries?content_type=noticia&order=-fields.fecha&limit=4&include=2&access_token=${CONTENTFUL_TOKEN}`;
+    const CONTENTFUL_BASE     = `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE}/entries?content_type=noticia&order=-fields.fecha&limit=4&include=2&access_token=${CONTENTFUL_TOKEN}`;
 
-    async function loadNoticias() {
+    const NEWS_STRINGS = {
+      es: {
+        loading: 'Cargando noticias...',
+        empty:   'No hay noticias disponibles aún.',
+        error:   'No se pudieron cargar las noticias.',
+        novideo: 'Tu navegador no soporta el video.',
+        meses:   ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+        fmt:     (d, m) => `${d.getDate()} de ${m[d.getMonth()]} de ${d.getFullYear()}`
+      },
+      en: {
+        loading: 'Loading news...',
+        empty:   'No news available yet.',
+        error:   'Could not load the news.',
+        novideo: 'Your browser does not support the video.',
+        meses:   ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        fmt:     (d, m) => `${m[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+      }
+    };
+
+    window.__newsLang = 'es';
+
+    async function loadNoticias(lang) {
+      lang = (lang === 'en') ? 'en' : 'es';
+      window.__newsLang = lang;
+      const S = NEWS_STRINGS[lang];
       const grid = document.getElementById('news-grid');
+      if (!grid) return;
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">${S.loading}</div>`;
+
+      const fetchJson = async (u) => (await fetch(u)).json();
 
       try {
-        const res  = await fetch(CONTENTFUL_URL);
-        const data = await res.json();
+        // Ask Contentful for the English locale when in EN; fall back to default if that locale/content is missing.
+        let data;
+        if (lang === 'en') {
+          for (const loc of ['en-US', 'en']) {
+            data = await fetchJson(CONTENTFUL_BASE + '&locale=' + loc);
+            if (!(data && data.sys && data.sys.type === 'Error')) break;
+          }
+          if (data && data.sys && data.sys.type === 'Error') data = await fetchJson(CONTENTFUL_BASE);
+        } else {
+          data = await fetchJson(CONTENTFUL_BASE);
+        }
 
         if (!data.items || data.items.length === 0) {
-          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">No hay noticias disponibles aún.</div>`;
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">${S.empty}</div>`;
           return;
         }
 
-        // Mapa de assets (videos/imágenes) incluidos en la respuesta
         const assets = {};
         if (data.includes && data.includes.Asset) {
-          data.includes.Asset.forEach(a => {
-            assets[a.sys.id] = a.fields.file;
-          });
+          data.includes.Asset.forEach(a => { assets[a.sys.id] = a.fields.file; });
         }
-
-        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
         grid.innerHTML = '';
         data.items.forEach(item => {
           const f = item.fields;
 
-          // Formatear fecha
           let dateStr = f.fecha || '';
           if (dateStr) {
             const d = new Date(dateStr);
-            dateStr = `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+            dateStr = S.fmt(d, S.meses);
           }
 
-          // Detectar video (campo tipo Media de Contentful)
           let videoHTML = '';
           if (f.video && f.video.sys && f.video.sys.id) {
             const asset = assets[f.video.sys.id];
@@ -1069,7 +1130,7 @@
                 <div style="margin:0.8rem 0;border-radius:8px;overflow:hidden;">
                   <video controls preload="metadata" style="width:100%;border-radius:8px;display:block;background:#000;">
                     <source src="${videoUrl}" type="${asset.contentType || 'video/mp4'}">
-                    Tu navegador no soporta el video.
+                    ${S.novideo}
                   </video>
                 </div>`;
             }
@@ -1083,20 +1144,20 @@
           }
           card.innerHTML = `
             <p class="news-date">${dateStr}</p>
-            <h3>${f.titulo}</h3>
+            <h3>${f.titulo || ''}</h3>
             ${videoHTML}
-            <p>${f.resumen}</p>
-            <a href="${f.url}" target="_blank" rel="noopener" style="text-decoration:none;"><span class="news-tag">${f.fuente} →</span></a>
+            <p>${f.resumen || ''}</p>
+            <a href="${f.url}" target="_blank" rel="noopener" style="text-decoration:none;"><span class="news-tag">${f.fuente || ''} →</span></a>
           `;
           grid.appendChild(card);
         });
 
       } catch(err) {
-        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">No se pudieron cargar las noticias.</div>`;
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:rgba(255,248,240,0.4);font-size:0.85rem;">${S.error}</div>`;
       }
     }
 
-    loadNoticias();
+    loadNoticias('es');
   </script>
 </section>
 
@@ -1494,7 +1555,7 @@
     </a>
     <a class="social-pill" href="https://www.iamchappellroan.com" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#1a0030,#c084fc,#ff2d78);color:#fff;">
       <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-      Sitio Oficial
+      <span data-i18n>Sitio Oficial</span>
     </a>
   </div>
 </section>
@@ -1506,10 +1567,10 @@
   <p class="section-label">✦ Seguinos</p>
   <h2 class="section-title">CHAPPELLROAN.COM.AR</h2>
   <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Chappell Roan Argentina · El primer portal de noticias de Chappell Roan en Argentina</span>
-  <p style="font-size:0.92rem;color:rgba(255,248,240,0.75);line-height:1.85;margin-bottom:1.2rem;">
+  <p data-i18n-html="infoLead" style="font-size:0.92rem;color:rgba(255,248,240,0.75);line-height:1.85;margin-bottom:1.2rem;">
     <strong style="color:var(--cream);">chappellroan.com.ar</strong> es el primer portal de noticias dedicado a Chappell Roan en Argentina. Cubrimos las últimas noticias, shows, discografía, videos y novedades de la Midwest Princess en español.
   </p>
-  <p style="font-size:0.92rem;color:rgba(255,248,240,0.75);line-height:1.85;margin-bottom:1.2rem;">
+  <p data-i18n-html="infoFollow" style="font-size:0.92rem;color:rgba(255,248,240,0.75);line-height:1.85;margin-bottom:1.2rem;">
     Podés seguir todas las actualizaciones, updates para fans y noticias a través de nuestras cuentas oficiales:
   </p>
   <ul style="list-style:none;padding:0;font-size:0.92rem;line-height:2.2;">
@@ -1517,17 +1578,17 @@
     <li>𝕏 Twitter / X: <a href="https://x.com/maisonroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;font-weight:500;">@maisonroan</a> — x.com/maisonroan</li>
     <li>🌐 Web: <a href="https://chappellroan.com.ar" style="color:var(--hot-pink);text-decoration:none;font-weight:500;">chappellroan.com.ar</a></li>
   </ul>
-  <p style="font-size:0.85rem;color:rgba(255,248,240,0.5);line-height:1.8;margin-top:1.5rem;">
+  <p data-i18n-html="infoTour" style="font-size:0.85rem;color:rgba(255,248,240,0.5);line-height:1.8;margin-top:1.5rem;">
     Para noticias sobre el tour, shows en Argentina, lanzamientos musicales y toda la información sobre Chappell Roan, visitá <a href="https://chappellroan.com.ar" style="color:var(--hot-pink);text-decoration:none;">chappellroan.com.ar</a> y seguinos en Instagram <a href="https://www.instagram.com/maisonroan/" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> y en X <a href="https://x.com/maisonroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a>.
   </p>
-  <p style="font-size:0.8rem;color:rgba(255,248,240,0.4);line-height:1.8;margin-top:1rem;">
+  <p data-i18n-html="infoSource" style="font-size:0.8rem;color:rgba(255,248,240,0.4);line-height:1.8;margin-top:1rem;">
     Somos la fuente principal de updates de Chappell Roan en Argentina en tiempo real y actualizada para toda la comunidad de fans: noticias, tour, nuevas canciones, lanzamientos, shows, entradas, setlists, sorteos, regalos y novedades de la Midwest Princess. El fandom argentino se mantiene actualizado a través de nuestras redes oficiales y nuestro sitio web.
   </p>
 </section>
 
 <footer>
   <div class="glitter-line" style="margin-bottom:1.5rem"></div>
-  Primer Web Fanpage de Chappell Roan en Argentina © 2026 · Hecho con <span>♥</span> · by @all
+  <span data-i18n-html="footerMain">Primer Web Fanpage de Chappell Roan en Argentina © 2026 · Hecho con <span>♥</span> · by @all</span>
   <br><br>
   <small style="opacity:0.35;font-size:0.65rem;letter-spacing:0.08em;">
     <a href="https://chappellroan.com.ar" style="color:inherit;text-decoration:none;">chappellroan.com.ar</a> ·
@@ -1637,6 +1698,96 @@
         }
       });
     }
+  </script>
+
+  <!-- ── Language toggle (ES / EN) ── -->
+  <script>
+  (function(){
+    const dict = {
+      "Noticias":"News",
+      "Discografía":"Discography",
+      "Redes":"Socials",
+      "Últimos Videos":"Latest Videos",
+      "Redes Sociales":"Social Media",
+      "Sitio Oficial":"Official Site",
+      "✦ Últimas noticias":"✦ Latest news",
+      "✦ Info en tiempo real de Chappell Roan":"✦ Real-time Chappell Roan info",
+      "✦ Su música":"✦ Her music",
+      "✦ Fechas en vivo · Shows & festivales":"✦ Live dates · Shows & festivals",
+      "✦ Canal oficial":"✦ Official channel",
+      "✦ Seguila en todas las plataformas":"✦ Follow her on every platform",
+      "✦ Seguinos":"✦ Follow us",
+      "✦ Maison Roan · Tu portal de noticias favorito de Chappell Roan en Argentina ✦":"✦ Maison Roan · Your favorite Chappell Roan news hub in Argentina ✦",
+      'El "Visions of Damsels & Other Dangerous Things Tour" finalizó en marzo 2026.':'The "Visions of Damsels & Other Dangerous Things Tour" wrapped in March 2026.',
+      "Seguí las redes oficiales de Chappell para ser la primera en enterarte de nuevas fechas cuando se anuncien.":"Follow Chappell's official socials to be the first to hear about new dates when they're announced.",
+      "Próxima presentación · Festival":"Next appearance · Festival",
+      "Irvine, California 🇺🇸 · Parte del line-up del festival benéfico all-women de Olivia Rodrigo":"Irvine, California 🇺🇸 · Part of the lineup of Olivia Rodrigo's all-women benefit festival",
+      "Historial del tour · Visions of Damsels":"Tour history · Visions of Damsels",
+      "São Paulo, Brasil · Última fecha del tour":"São Paulo, Brazil · Final tour date",
+      "Pasadena, CA · Estados Unidos":"Pasadena, CA · United States",
+      "Kansas City, MO · Estados Unidos":"Kansas City, MO · United States",
+      "Forest Hills, New York · Estados Unidos":"Forest Hills, New York · United States",
+      "Forest Hills Stadium · 4 noches":"Forest Hills Stadium · 4 nights",
+      "Ciudad de México, México":"Mexico City, Mexico",
+      "Finalizado":"Finished",
+      "Las cuentas oficiales de Chappell Roan para no perderte ningún lanzamiento, show ni novedad.":"Chappell Roan's official accounts so you don't miss a single release, show or update."
+    };
+
+    const richDict = {
+      infoLead: '<strong style="color:var(--cream);">chappellroan.com.ar</strong> is the first news hub dedicated to Chappell Roan in Argentina. We cover the latest news, shows, discography, videos and updates about the Midwest Princess.',
+      infoFollow: 'You can follow every update, fan update and piece of news through our official accounts:',
+      infoTour: 'For news about the tour, shows in Argentina, music releases and everything about Chappell Roan, visit <a href="https://chappellroan.com.ar" style="color:var(--hot-pink);text-decoration:none;">chappellroan.com.ar</a> and follow us on Instagram <a href="https://www.instagram.com/maisonroan/" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> and on X <a href="https://x.com/maisonroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a>.',
+      infoSource: 'We are the main source of real-time, up-to-date Chappell Roan updates in Argentina for the whole fan community: news, tour, new songs, releases, shows, tickets, setlists, giveaways, gifts and updates about the Midwest Princess. The Argentine fandom stays up to date through our official socials and our website.',
+      footerMain: 'First Chappell Roan Web Fanpage in Argentina © 2026 · Made with <span>♥</span> · by @all'
+    };
+
+    const plainSelectors = ['.nav-links a', '.nav-overlay a', '.hero-eyebrow', '.section-label', '.section-title', '.show-btn', '.social-intro', '#shows p', '#shows h4', '[data-i18n]'];
+
+    const originals = new Map();
+    const richOriginals = new Map();
+
+    function cache(){
+      document.querySelectorAll(plainSelectors.join(',')).forEach(el=>{
+        if(!originals.has(el)) originals.set(el, el.textContent);
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+        if(!richOriginals.has(el)) richOriginals.set(el, el.innerHTML);
+      });
+    }
+
+    window.currentLang = 'es';
+
+    window.setLang = function(lang){
+      lang = (lang === 'en') ? 'en' : 'es';
+      window.currentLang = lang;
+      document.documentElement.lang = lang;
+      cache();
+
+      originals.forEach((orig, el)=>{
+        const key = orig.trim();
+        el.textContent = (lang === 'en') ? (dict[key] || orig) : orig;
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+        const k = el.getAttribute('data-i18n-html');
+        el.innerHTML = (lang === 'en') ? (richDict[k] || richOriginals.get(el)) : richOriginals.get(el);
+      });
+
+      const flag = document.getElementById('lang-flag');
+      const label = document.getElementById('lang-label');
+      if(flag && label){
+        if(lang === 'en'){ flag.textContent = '🇦🇷'; label.textContent = 'ES'; }
+        else { flag.textContent = '🇬🇧'; label.textContent = 'EN'; }
+      }
+
+      if(typeof loadNoticias === 'function') loadNoticias(lang);
+    };
+
+    window.toggleLang = function(){
+      window.setLang(window.currentLang === 'en' ? 'es' : 'en');
+    };
+
+    cache();
+  })();
   </script>
 </body>
 </html>
