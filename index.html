@@ -333,7 +333,18 @@
       border-color: var(--hot-pink);
       transform: translateY(-1px);
     }
-    .lang-toggle .lang-flag { font-size: 1rem; line-height: 1; }
+    .lang-toggle .lang-flag {
+      display: inline-flex;
+      align-items: center;
+      line-height: 0;
+    }
+    .lang-toggle .lang-flag svg {
+      width: 1.25em;
+      height: auto;
+      border-radius: 2px;
+      display: block;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+    }
     @media (max-width: 768px) {
       .lang-toggle { margin-left: auto; margin-right: 0.8rem; }
     }
@@ -1012,7 +1023,7 @@
     <li><a href="#redes">Redes</a></li>
   </ul>
   <button class="lang-toggle" onclick="toggleLang()" aria-label="Switch language / Cambiar idioma">
-    <span class="lang-flag" id="lang-flag">🇬🇧</span><span id="lang-label">EN</span>
+    <span class="lang-flag" id="lang-flag"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><clipPath id="ukclip0"><rect width="60" height="40"/></clipPath><g clip-path="url(#ukclip0)"><rect width="60" height="40" fill="#012169"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><rect x="25" width="10" height="40" fill="#fff"/><rect y="15" width="60" height="10" fill="#fff"/><rect x="27" width="6" height="40" fill="#C8102E"/><rect y="17" width="60" height="6" fill="#C8102E"/></g></svg></span><span id="lang-label">EN</span>
   </button>
   <div class="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -1089,15 +1100,14 @@
       const fetchJson = async (u) => (await fetch(u)).json();
 
       try {
-        // Ask Contentful for the English locale when in EN; fall back to default if that locale/content is missing.
+        // EN → en-US locale; ES → es-AR locale (Contentful falls back to en-US if a field isn't translated).
+        const locales = (lang === 'en') ? ['en-US', 'en'] : ['es-AR', 'es'];
         let data;
-        if (lang === 'en') {
-          for (const loc of ['en-US', 'en']) {
-            data = await fetchJson(CONTENTFUL_BASE + '&locale=' + loc);
-            if (!(data && data.sys && data.sys.type === 'Error')) break;
-          }
-          if (data && data.sys && data.sys.type === 'Error') data = await fetchJson(CONTENTFUL_BASE);
-        } else {
+        for (const loc of locales) {
+          data = await fetchJson(CONTENTFUL_BASE + '&locale=' + loc);
+          if (!(data && data.sys && data.sys.type === 'Error')) break;
+        }
+        if (data && data.sys && data.sys.type === 'Error') {
           data = await fetchJson(CONTENTFUL_BASE);
         }
 
@@ -1755,6 +1765,9 @@
       });
     }
 
+    const FLAG_UK = '<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><clipPath id="ukclip"><rect width="60" height="40"/></clipPath><g clip-path="url(#ukclip)"><rect width="60" height="40" fill="#012169"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><rect x="25" width="10" height="40" fill="#fff"/><rect y="15" width="60" height="10" fill="#fff"/><rect x="27" width="6" height="40" fill="#C8102E"/><rect y="17" width="60" height="6" fill="#C8102E"/></g></svg>';
+    const FLAG_AR = '<svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="60" height="40" fill="#fff"/><rect width="60" height="13.34" fill="#74ACDF"/><rect y="26.66" width="60" height="13.34" fill="#74ACDF"/><circle cx="30" cy="20" r="4.3" fill="#F6B40E" stroke="#e0a000" stroke-width="0.6"/></svg>';
+
     window.currentLang = 'es';
 
     window.setLang = function(lang){
@@ -1775,8 +1788,9 @@
       const flag = document.getElementById('lang-flag');
       const label = document.getElementById('lang-label');
       if(flag && label){
-        if(lang === 'en'){ flag.textContent = '🇦🇷'; label.textContent = 'ES'; }
-        else { flag.textContent = '🇬🇧'; label.textContent = 'EN'; }
+        // Button shows the language you'd switch TO
+        if(lang === 'en'){ flag.innerHTML = FLAG_AR; label.textContent = 'ES'; }
+        else { flag.innerHTML = FLAG_UK; label.textContent = 'EN'; }
       }
 
       if(typeof loadNoticias === 'function') loadNoticias(lang);
