@@ -539,6 +539,158 @@
       opacity: 0.5;
     }
 
+    /* ══════════ HALLOWEEN MODE ══════════ */
+    .hween-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-left: 0.6rem;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid rgba(255,122,26,0.45);
+      border-radius: 999px;
+      background: rgba(255,122,26,0.1);
+      color: var(--cream);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      line-height: 1;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .hween-toggle span { display: inline-block; }
+    .hween-toggle:hover { background: rgba(255,122,26,0.22); transform: translateY(-1px); }
+    body.halloween .hween-toggle {
+      background: rgba(255,122,26,0.3);
+      box-shadow: 0 0 12px rgba(255,122,26,0.65);
+      border-color: #ff7a1a;
+    }
+    @media (max-width: 768px) { .hween-toggle { margin-left: 0.4rem; padding: 0.3rem 0.6rem; } .hween-toggle span { display: none; } }
+
+    body.halloween {
+      --electric-blue: #ff7a1a;
+      --lilac: #b14bff;
+      --gold: #ff7a1a;
+      --dark: #06000a;
+      background: radial-gradient(ellipse 80% 55% at 50% 0%, rgba(150,0,25,0.30), transparent 70%), #06000a;
+    }
+    body.halloween .hero-bg {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 32%, rgba(255,45,120,0.20) 0%, transparent 70%),
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(150,0,25,0.55) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 82% 22%, rgba(177,75,255,0.22) 0%, transparent 60%),
+        #06000a;
+    }
+    body.halloween .hero-title {
+      text-shadow: 0 0 26px rgba(200,0,30,0.7), 0 0 8px rgba(255,45,120,0.5);
+    }
+    body.halloween .hero-badge { border-color: rgba(200,0,30,0.6); }
+
+    body.halloween .nav-logo-text {
+      background: linear-gradient(180deg, #ff3b3b, #c1121f 55%, #7d0014);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(160,0,20,0.55);
+      font-size: 0.9em;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    @media (max-width: 768px) { body.halloween .nav-logo-text { font-size: 0.58em; } }
+
+    /* Blood-drip dividers (replaces the glitter line site-wide) */
+    body.halloween .glitter-line {
+      height: 26px;
+      opacity: 1;
+      background: none;
+      position: relative;
+      overflow: visible;
+    }
+    body.halloween .glitter-line::before {
+      content: '';
+      position: absolute; left: 0; top: 0; width: 100%; height: 6px;
+      background: #9c0018;
+    }
+    body.halloween .glitter-line::after {
+      content: '';
+      position: absolute; left: 0; top: 0; width: 100%; height: 26px;
+      background:
+        radial-gradient(6px 13px at 10% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(5px 22px at 24% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(7px 10px at 39% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(5px 25px at 55% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(6px 15px at 70% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(5px 20px at 84% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(6px 12px at 95% 0, #9c0018 98%, transparent 100%);
+      background-repeat: no-repeat;
+      filter: drop-shadow(0 3px 2px rgba(120,0,20,0.5));
+    }
+
+    /* FX layer (bats, webs, top drip) — only visible in Halloween mode */
+    .hween-fx { display: none; }
+    body.halloween .hween-fx { display: block; }
+
+    .hw-drip-top { position: absolute; top: 0; left: 0; width: 100%; height: 62px; z-index: 3; pointer-events: none; }
+    .hw-drip-top::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 14px; background: #9c0018; }
+    .hw-drip-top::after {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 62px;
+      background:
+        radial-gradient(8px 28px at 6% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(7px 42px at 15% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(9px 20px at 24% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(7px 50px at 33% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(8px 30px at 44% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(7px 38px at 54% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(9px 22px at 64% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(7px 52px at 73% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(8px 28px at 82% 0, #9c0018 98%, transparent 100%),
+        radial-gradient(7px 42px at 91% 0, #7d0014 98%, transparent 100%),
+        radial-gradient(8px 24px at 98% 0, #9c0018 98%, transparent 100%);
+      background-repeat: no-repeat;
+      filter: drop-shadow(0 3px 3px rgba(120,0,20,0.45));
+    }
+
+    .hw-web { position: absolute; top: 0; width: 130px; height: 130px; opacity: 0.45; z-index: 3; pointer-events: none; }
+    .hw-web.left { left: 0; }
+    .hw-web.right { right: 0; transform: scaleX(-1); }
+
+    .hw-bat { position: absolute; z-index: 3; pointer-events: none; width: 44px; will-change: transform; }
+    .hw-bat.b1 { top: 26%; animation: hwFly1 16s linear infinite; }
+    .hw-bat.b2 { top: 42%; width: 30px; animation: hwFly2 22s linear infinite; }
+    .hw-bat.b3 { top: 15%; width: 24px; animation: hwFly1 19s linear infinite 5s; }
+    .hw-bat-inner { display: block; animation: hwFlap 0.32s ease-in-out infinite; transform-origin: center; }
+    @keyframes hwFly1 {
+      0%   { transform: translateX(-70px) translateY(0) rotate(-4deg); }
+      50%  { transform: translateX(48vw) translateY(-20px) rotate(4deg); }
+      100% { transform: translateX(104vw) translateY(0) rotate(-4deg); }
+    }
+    @keyframes hwFly2 {
+      0%   { transform: translateX(104vw) translateY(0) rotate(4deg) scaleX(-1); }
+      50%  { transform: translateX(45vw) translateY(22px) rotate(-4deg) scaleX(-1); }
+      100% { transform: translateX(-70px) translateY(0) rotate(4deg) scaleX(-1); }
+    }
+    @keyframes hwFlap { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.72); } }
+    @media (prefers-reduced-motion: reduce) { .hw-bat, .hw-bat-inner { animation: none; } }
+
+    .hw-knife {
+      position: absolute; z-index: 3; pointer-events: none;
+      width: 46px; top: 58%; right: 7%;
+      transform-origin: top center;
+      animation: hwSway 4.5s ease-in-out infinite;
+      filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5));
+    }
+    .hw-fangs {
+      position: absolute; z-index: 3; pointer-events: none;
+      width: 58px; top: 54%; left: 7%;
+      animation: hwFloat 5s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px rgba(160,0,20,0.5));
+    }
+    @keyframes hwSway { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    @keyframes hwFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @media (prefers-reduced-motion: reduce) { .hw-knife, .hw-fangs { animation: none; } }
+
     /* ── NEWS ── */
     #noticias {
       padding-top: 6rem;
@@ -1022,6 +1174,7 @@
     <li><a href="#videos">Videos</a></li>
     <li><a href="#redes">Redes</a></li>
   </ul>
+  <button class="hween-toggle" onclick="toggleHalloween()" aria-label="Modo Halloween / Halloween mode" title="Modo Halloween">🎃 <span>MODO FELIZA</span></button>
   <button class="lang-toggle" onclick="toggleLang()" aria-label="Switch language / Cambiar idioma">
     <span class="lang-flag" id="lang-flag"><svg viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="60" height="40" fill="#fff"/><g fill="#B22234"><rect width="60" height="3.08"/><rect y="6.15" width="60" height="3.08"/><rect y="12.31" width="60" height="3.08"/><rect y="18.46" width="60" height="3.08"/><rect y="24.62" width="60" height="3.08"/><rect y="30.77" width="60" height="3.08"/><rect y="36.92" width="60" height="3.08"/></g><rect width="24" height="21.54" fill="#3C3B6E"/><g fill="#fff"><circle cx="3" cy="2.7" r="0.85"/><circle cx="7.4" cy="2.7" r="0.85"/><circle cx="11.8" cy="2.7" r="0.85"/><circle cx="16.2" cy="2.7" r="0.85"/><circle cx="20.6" cy="2.7" r="0.85"/><circle cx="3" cy="7.1" r="0.85"/><circle cx="7.4" cy="7.1" r="0.85"/><circle cx="11.8" cy="7.1" r="0.85"/><circle cx="16.2" cy="7.1" r="0.85"/><circle cx="20.6" cy="7.1" r="0.85"/><circle cx="3" cy="11.5" r="0.85"/><circle cx="7.4" cy="11.5" r="0.85"/><circle cx="11.8" cy="11.5" r="0.85"/><circle cx="16.2" cy="11.5" r="0.85"/><circle cx="20.6" cy="11.5" r="0.85"/><circle cx="3" cy="15.9" r="0.85"/><circle cx="7.4" cy="15.9" r="0.85"/><circle cx="11.8" cy="15.9" r="0.85"/><circle cx="16.2" cy="15.9" r="0.85"/><circle cx="20.6" cy="15.9" r="0.85"/></g></svg></span><span id="lang-label">EN</span>
   </button>
@@ -1034,6 +1187,20 @@
 <div id="hero">
   <div class="hero-bg"></div>
   <div class="hero-stars"></div>
+
+  <div class="hween-fx" aria-hidden="true">
+    <div class="hw-drip-top"></div>
+    <svg class="hw-web left" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg"><g stroke="#ffffff" stroke-width="1" fill="none" opacity="0.85"><line x1="0" y1="0" x2="130" y2="0"/><line x1="0" y1="0" x2="120" y2="50"/><line x1="0" y1="0" x2="92" y2="92"/><line x1="0" y1="0" x2="50" y2="120"/><line x1="0" y1="0" x2="0" y2="130"/><path d="M30,0 Q24,24 0,30"/><path d="M60,0 Q48,48 0,60"/><path d="M90,0 Q74,74 0,90"/><path d="M120,0 Q100,100 0,120"/></g></svg>
+    <svg class="hw-web right" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg"><g stroke="#ffffff" stroke-width="1" fill="none" opacity="0.85"><line x1="0" y1="0" x2="130" y2="0"/><line x1="0" y1="0" x2="120" y2="50"/><line x1="0" y1="0" x2="92" y2="92"/><line x1="0" y1="0" x2="50" y2="120"/><line x1="0" y1="0" x2="0" y2="130"/><path d="M30,0 Q24,24 0,30"/><path d="M60,0 Q48,48 0,60"/><path d="M90,0 Q74,74 0,90"/><path d="M120,0 Q100,100 0,120"/></g></svg>
+
+    <svg class="hw-bat b1" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg"><g class="hw-bat-inner" fill="#0a0a0f"><path d="M50,20 C46,10 42,14 40,22 C36,10 26,6 16,10 C22,14 20,20 24,26 C16,24 8,28 2,36 C10,34 14,38 22,38 C18,44 20,50 26,52 C28,44 36,40 42,44 C44,48 47,50 50,50 C53,50 56,48 58,44 C64,40 72,44 74,52 C80,50 82,44 78,38 C86,38 90,34 98,36 C92,28 84,24 76,26 C80,20 78,14 84,10 C74,6 64,10 60,22 C58,14 54,10 50,20 Z"/></g></svg>
+    <svg class="hw-bat b2" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg"><g class="hw-bat-inner" fill="#0a0a0f"><path d="M50,20 C46,10 42,14 40,22 C36,10 26,6 16,10 C22,14 20,20 24,26 C16,24 8,28 2,36 C10,34 14,38 22,38 C18,44 20,50 26,52 C28,44 36,40 42,44 C44,48 47,50 50,50 C53,50 56,48 58,44 C64,40 72,44 74,52 C80,50 82,44 78,38 C86,38 90,34 98,36 C92,28 84,24 76,26 C80,20 78,14 84,10 C74,6 64,10 60,22 C58,14 54,10 50,20 Z"/></g></svg>
+    <svg class="hw-bat b3" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg"><g class="hw-bat-inner" fill="#0a0a0f"><path d="M50,20 C46,10 42,14 40,22 C36,10 26,6 16,10 C22,14 20,20 24,26 C16,24 8,28 2,36 C10,34 14,38 22,38 C18,44 20,50 26,52 C28,44 36,40 42,44 C44,48 47,50 50,50 C53,50 56,48 58,44 C64,40 72,44 74,52 C80,50 82,44 78,38 C86,38 90,34 98,36 C92,28 84,24 76,26 C80,20 78,14 84,10 C74,6 64,10 60,22 C58,14 54,10 50,20 Z"/></g></svg>
+
+    <svg class="hw-knife" viewBox="0 0 40 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="hwBlade" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#e9edf2"/><stop offset="45%" stop-color="#ffffff"/><stop offset="55%" stop-color="#c3ccd6"/><stop offset="100%" stop-color="#8a93a0"/></linearGradient></defs><circle cx="20" cy="7" r="5" fill="#2a1a10" stroke="#160d07" stroke-width="1.5"/><rect x="16.5" y="9" width="7" height="22" fill="#2a1a10" stroke="#160d07" stroke-width="1.2"/><rect x="7" y="30" width="26" height="5" rx="1.5" fill="#4a4f57" stroke="#2b2e33" stroke-width="1"/><path d="M14.5,35 L25.5,35 L22,110 Q20,120 18,110 Z" fill="url(#hwBlade)" stroke="#8a93a0" stroke-width="1"/><path d="M20,36 L20,108" stroke="#ffffff" stroke-width="1" opacity="0.6"/><path d="M14.5,35 C 17,52 17,74 18.5,96 C 19,84 22,70 22,52 C 22,46 24,40 25.5,35 Z" fill="#9c0018" opacity="0.85"/><g fill="#9c0018"><path d="M20,118 C17,120 17,126 20,128 C23,126 23,120 20,118 Z"/><circle cx="14" cy="112" r="2.4"/><circle cx="26" cy="116" r="2"/></g></svg>
+
+    <svg class="hw-fangs" viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8,14 Q40,2 72,14 Q40,26 8,14 Z" fill="#7d0014"/><path d="M8,14 Q40,24 72,14" fill="none" stroke="#5a000e" stroke-width="1.5"/><path d="M22,17 L34,17 L28,40 Q28,44 26,40 Z" fill="#fff" stroke="#e7e0d8" stroke-width="0.8"/><path d="M46,17 L58,17 L52,40 Q52,44 50,40 Z" fill="#fff" stroke="#e7e0d8" stroke-width="0.8"/><g fill="#9c0018"><path d="M27,42 C25,44 25,49 27,51 C29,49 29,44 27,42 Z"/><path d="M51,44 C49,46 49,51 51,53 C53,51 53,46 51,44 Z"/></g></svg>
+  </div>
 
   <div class="eyebrow-wrap">
     <p class="hero-eyebrow">✦ Maison Roan · Tu portal de noticias favorito de Chappell Roan en Argentina ✦</p>
@@ -1623,6 +1790,7 @@
   window.addEventListener('resize', resize);
 
   const colors = ['#ff2d78','#00c8ff','#c084fc','#ffd700','#ffb3d1'];
+  const bloodColors = ['#8c0014','#a00016','#c1121f','#6e0010','#b3001b'];
 
   function createSparkle(x, y) {
     return {
@@ -1632,6 +1800,7 @@
       alpha: Math.random(),
       speed: Math.random() * 0.5 + 0.1,
       color: colors[Math.floor(Math.random() * colors.length)],
+      blood: bloodColors[Math.floor(Math.random() * bloodColors.length)],
       drift: (Math.random() - 0.5) * 0.3
     };
   }
@@ -1640,21 +1809,40 @@
 
   function animateSparkles() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const hw = document.body.classList.contains('halloween');
     sparkles.forEach((s, i) => {
       ctx.save();
-      ctx.globalAlpha = s.alpha * 0.6;
-      ctx.fillStyle = s.color;
-      ctx.shadowBlur = 6;
-      ctx.shadowColor = s.color;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fill();
+      if (hw) {
+        // Falling blood droplet (teardrop)
+        ctx.globalAlpha = Math.min(1, s.alpha * 0.85 + 0.15);
+        ctx.fillStyle = s.blood;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = '#a00016';
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y, s.r * 0.75, s.r * 1.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.globalAlpha = s.alpha * 0.6;
+        ctx.fillStyle = s.color;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
-      s.y -= s.speed;
-      s.x += s.drift;
-      s.alpha += (Math.random() - 0.5) * 0.04;
-      s.alpha = Math.max(0.1, Math.min(1, s.alpha));
-      if (s.y < -10) sparkles[i] = createSparkle(Math.random() * canvas.width, canvas.height + 10);
+
+      if (hw) {
+        s.y += s.speed * 1.7;          // blood falls down
+        s.x += s.drift * 0.4;
+        if (s.y > canvas.height + 12) sparkles[i] = createSparkle(Math.random() * canvas.width, -12);
+      } else {
+        s.y -= s.speed;                // glitter rises up
+        s.x += s.drift;
+        s.alpha += (Math.random() - 0.5) * 0.04;
+        s.alpha = Math.max(0.1, Math.min(1, s.alpha));
+        if (s.y < -10) sparkles[i] = createSparkle(Math.random() * canvas.width, canvas.height + 10);
+      }
     });
     requestAnimationFrame(animateSparkles);
   }
@@ -1802,6 +1990,18 @@
 
     cache();
   })();
+  </script>
+
+  <!-- ── Halloween mode toggle ── -->
+  <script>
+    window.toggleHalloween = function(){
+      const on = document.body.classList.toggle('halloween');
+      const logo = document.querySelector('.nav-logo-text');
+      if (logo) {
+        if (!logo.dataset.normal) logo.dataset.normal = logo.textContent;
+        logo.textContent = on ? 'MAISON ROAN HALLOWEEN EN FELIZA' : logo.dataset.normal;
+      }
+    };
   </script>
 </body>
 </html>
