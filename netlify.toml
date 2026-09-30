@@ -1,0 +1,7 @@
+# Config de Netlify.
+# Si YA tenés un netlify.toml en tu repo, NO lo reemplaces: solo asegurate
+# de tener la línea "functions" apuntando a netlify/functions.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"

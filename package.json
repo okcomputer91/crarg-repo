@@ -1,0 +1,9 @@
+{
+  "name": "feliza-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chappellween / Maison Roan - sitio + Netlify Function de la Ruleta Feliza",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
