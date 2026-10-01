@@ -226,13 +226,16 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
 
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--dark);
       color: var(--cream);
       overflow-x: hidden;
+      width: 100%;
+      max-width: 100%;
+      position: relative;
     }
 
     /* ── NOISE OVERLAY ── */
@@ -846,26 +849,32 @@
     /* Halloween intro flash */
     #hw-intro {
       position: fixed; inset: 0; z-index: 9999; display: none;
-      align-items: center; justify-content: center;
+      place-items: center;
+      padding: 20px; box-sizing: border-box;
       background: radial-gradient(circle at center, rgba(70,0,12,0.85), rgba(3,0,5,0.97));
       overflow: hidden;
     }
-    #hw-intro.show { display: flex; }
+    #hw-intro.show { display: grid; }
     .hw-intro-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
     #hw-intro.show .hw-intro-flash { animation: hwLightning 2.4s linear forwards; }
-    .hw-intro-card { position: relative; transform: rotate(-8deg); opacity: 0; }
-    #hw-intro.show .hw-intro-card { animation: hwCardIn 0.5s cubic-bezier(.2,.8,.3,1) forwards, hwShake 0.55s ease 0.1s; }
+    .hw-intro-card {
+      position: relative;
+      width: 100%; max-width: min(78vw, 320px);
+      justify-self: center; align-self: center;
+      transform: rotate(-6deg); opacity: 0;
+    }
+    #hw-intro.show .hw-intro-card { animation: hwCardIn 0.55s cubic-bezier(.2,.8,.3,1) forwards; }
     .hw-intro-card img {
-      width: min(74vw, 330px); display: block; border-radius: 10px;
+      width: 100%; max-width: 100%; height: auto; display: block; border-radius: 10px;
       border: 3px solid #7d0014;
       box-shadow: 0 0 45px rgba(180,0,22,0.85), 0 22px 55px rgba(0,0,0,0.75);
       filter: contrast(1.08) saturate(1.12);
     }
     .hw-intro-blood { position: absolute; inset: 0; pointer-events: none; }
-    .hw-intro-blood svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .hw-intro-blood svg { width: 100%; height: 100%; display: block; }
     .hw-intro-caption {
-      position: absolute; bottom: -2.4rem; left: 0; width: 100%; text-align: center;
-      font-family: 'Bebas Neue', cursive; letter-spacing: 0.2em; font-size: 1.5rem;
+      position: absolute; bottom: -2.2rem; left: 0; width: 100%; text-align: center;
+      font-family: 'Bebas Neue', cursive; letter-spacing: 0.16em; font-size: 1.4rem;
       color: #ff3b3b; text-shadow: 0 0 14px rgba(180,0,22,0.9);
     }
     #hw-intro.hide { animation: hwIntroOut 0.6s ease forwards; }
@@ -876,13 +885,9 @@
       28% { opacity: 0; } 100% { opacity: 0; }
     }
     @keyframes hwCardIn {
-      0% { opacity: 0; transform: rotate(-14deg) scale(1.25); }
+      0% { opacity: 0; transform: rotate(-12deg) scale(1.2); }
       60% { opacity: 1; }
-      100% { opacity: 1; transform: rotate(-8deg) scale(1); }
-    }
-    @keyframes hwShake {
-      0%,100% { margin-left: 0; } 20% { margin-left: -10px; } 40% { margin-left: 8px; }
-      60% { margin-left: -6px; } 80% { margin-left: 4px; }
+      100% { opacity: 1; transform: rotate(-6deg) scale(1); }
     }
     @media (prefers-reduced-motion: reduce) {
       #hw-intro.show .hw-intro-flash, #hw-intro.show .hw-intro-card { animation: none; }
@@ -1345,10 +1350,9 @@
     }
     @media (max-width: 560px) {
       .nav-logo-text { max-width: 36vw; }
-      #hw-intro { padding: 1.5rem; box-sizing: border-box; }
-      .hw-intro-card { max-width: 86vw; }
-      .hw-intro-card img { width: 100%; max-width: 78vw; height: auto; }
-      .hw-intro-caption { font-size: 1.15rem; letter-spacing: 0.12em; bottom: -1.9rem; }
+      #hw-intro { padding: 16px; }
+      .hw-intro-card { max-width: 76vw; }
+      .hw-intro-caption { font-size: 1.1rem; letter-spacing: 0.1em; bottom: -1.8rem; }
     }
 
     @media (max-width: 480px) {
