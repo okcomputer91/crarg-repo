@@ -346,7 +346,8 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
     }
     @media (max-width: 768px) {
-      .lang-toggle { margin-left: auto; margin-right: 0.8rem; }
+      .lang-toggle { margin-left: 0.35rem; margin-right: 0; padding: 0.3rem 0.5rem; }
+      .lang-toggle #lang-label { display: none; }
     }
 
     /* ── HERO ── */
@@ -611,7 +612,7 @@
       box-shadow: 0 0 12px rgba(255,122,26,0.65);
       border-color: #ff7a1a;
     }
-    @media (max-width: 768px) { .hween-toggle { margin-left: 0.4rem; padding: 0.3rem 0.6rem; } .hween-toggle span { display: none; } }
+    @media (max-width: 768px) { .hween-toggle { margin-left: auto; padding: 0.3rem 0.55rem; } .hween-toggle span { display: none; } }
 
     body.halloween {
       --electric-blue: #ff7a1a;
@@ -720,7 +721,7 @@
       -webkit-text-fill-color: #ff3b3b;
       color: #ff3b3b;
     }
-    @media (max-width: 768px) { body.halloween .nav-logo-text { font-size: 0.58em; } }
+    @media (max-width: 768px) { body.halloween .nav-logo-text { display: none; } }
 
     /* Blood-drip dividers (replaces the glitter line site-wide) */
     body.halloween .glitter-line {
@@ -1318,7 +1319,11 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .nav-links { display: none; }
-      .hamburger { display: flex; }
+      .hamburger { display: flex; margin-left: 0.5rem; }
+      nav { padding: 0.65rem 1rem; gap: 0; flex-wrap: nowrap; }
+      .nav-logo { min-width: 0; flex-shrink: 1; overflow: hidden; }
+      .nav-logo-text { font-size: 1.3rem; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .hw-tent { top: 48px; }
       .gallery-masonry { columns: 2; }
       .show-row { grid-template-columns: 80px 1fr; }
       .show-btn { display: none; }
@@ -1327,6 +1332,9 @@
       .news-card h3 { font-size: 0.95rem; }
       .news-card p { font-size: 0.8rem; }
       section { padding: 3rem 1.2rem; }
+    }
+    @media (max-width: 560px) {
+      .nav-logo-text { max-width: 36vw; }
     }
 
     @media (max-width: 480px) {
@@ -2382,7 +2390,7 @@
           // Demo fallback (e.g. running the file without the Netlify backend): never awards a real code
           spinToIndex(NONE_IDX[Math.floor(Math.random()*NONE_IDX.length)], function(){
             renderResult('none', null);
-            if (note) note.textContent = (lang()==='en' ? 'Demo mode — coming soon' : 'Modo demo — Disponible primer semana de octubre.');
+            if (note) note.textContent = (lang()==='en' ? 'Demo mode — deploy on Netlify to play for real.' : 'Modo demo — subí el sitio a Netlify para jugar de verdad.');
             hub.disabled = false; spinning = false;
           });
         });
