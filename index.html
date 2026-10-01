@@ -721,7 +721,17 @@
       -webkit-text-fill-color: #ff3b3b;
       color: #ff3b3b;
     }
-    @media (max-width: 768px) { body.halloween .nav-logo-text { display: none; } }
+    @media (max-width: 768px) {
+      body.halloween .nav-logo-text {
+        display: inline-block;
+        font-size: 0.72rem;
+        line-height: 1.08;
+        letter-spacing: 0.02em;
+        white-space: normal;
+        max-width: 52vw;
+        text-align: left;
+      }
+    }
 
     /* Blood-drip dividers (replaces the glitter line site-wide) */
     body.halloween .glitter-line {
@@ -1321,9 +1331,9 @@
       .nav-links { display: none; }
       .hamburger { display: flex; margin-left: 0.5rem; }
       nav { padding: 0.65rem 1rem; gap: 0; flex-wrap: nowrap; }
-      .nav-logo { min-width: 0; flex-shrink: 1; overflow: hidden; }
-      .nav-logo-text { font-size: 1.3rem; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .hw-tent { top: 48px; }
+      .nav-logo { min-width: 0; flex-shrink: 1; overflow: hidden; align-items: center; }
+      .nav-logo-text { font-size: 1.2rem; max-width: 44vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .hw-tent { top: 72px; }
       .gallery-masonry { columns: 2; }
       .show-row { grid-template-columns: 80px 1fr; }
       .show-btn { display: none; }
@@ -1335,6 +1345,10 @@
     }
     @media (max-width: 560px) {
       .nav-logo-text { max-width: 36vw; }
+      #hw-intro { padding: 1.5rem; box-sizing: border-box; }
+      .hw-intro-card { max-width: 86vw; }
+      .hw-intro-card img { width: 100%; max-width: 78vw; height: auto; }
+      .hw-intro-caption { font-size: 1.15rem; letter-spacing: 0.12em; bottom: -1.9rem; }
     }
 
     @media (max-width: 480px) {
@@ -2390,7 +2404,7 @@
           // Demo fallback (e.g. running the file without the Netlify backend): never awards a real code
           spinToIndex(NONE_IDX[Math.floor(Math.random()*NONE_IDX.length)], function(){
             renderResult('none', null);
-            if (note) note.textContent = (lang()==='en' ? 'Demo mode — coming soon.' : 'Modo demo — disponible primera semana de Octubre.');
+            if (note) note.textContent = (lang()==='en' ? 'Demo mode — Available the first week of October.' : 'Modo demo — Disponible la primera semana de octubre.');
             hub.disabled = false; spinning = false;
           });
         });
