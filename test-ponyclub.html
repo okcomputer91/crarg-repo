@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Pink Pony Club · Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+<!--
+  PINK PONY CLUB — minijuego de prueba (archivo independiente).
+  No toca la ruleta ni el backend. El código "TEST-XXXX" es solo de prueba y NO vale como entrada.
+  Ajustes rápidos en el <script>: TOTAL (intentos), END_ON_FIRST_MISS, y CFG (velocidad / tamaño de la zona de acierto).
+-->
+<style>
+  :root { --hot:#ff2d78; --baby:#ffb3d1; --gold:#d9a441; --cream:#fff8f0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'DM Sans', sans-serif; color: var(--cream); min-height: 100vh;
+    background:
+      radial-gradient(ellipse 90% 50% at 50% 0%, rgba(150,0,60,0.35), transparent 70%),
+      #06000a;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; padding: 18px 14px 30px; text-align: center; }
+  .badge-test {
+    display: inline-block; font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gold); border: 1px dashed rgba(217,164,65,.6); border-radius: 999px;
+    padding: .25rem .75rem; margin-bottom: .7rem;
+  }
+  h1 {
+    font-family: 'Bebas Neue', cursive; font-weight: 400; letter-spacing: .06em;
+    font-size: clamp(2.3rem, 11vw, 3.2rem); line-height: 1; color: #ff6aa8;
+    text-shadow: 0 0 18px rgba(255,45,120,.65);
+  }
+  .sub { font-size: .85rem; color: rgba(255,248,240,.7); margin: .5rem 0 1rem; line-height: 1.55; }
+  .sub strong { color: var(--gold); }
+  .hud { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-bottom: .75rem; }
+  .tails { display: flex; gap: .4rem; }
+  .tail-dot {
+    width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; font-size: .9rem; color: rgba(255,179,209,.55);
+    border: 2px solid rgba(255,179,209,.3); background: rgba(255,45,120,.06);
+    transition: background .2s, box-shadow .2s, transform .2s;
+  }
+  .tail-dot.hit { background: var(--hot); border-color: var(--baby); color: #fff; box-shadow: 0 0 12px rgba(255,45,120,.75); transform: scale(1.08); }
+  .tail-dot.miss { background: #25070d; border-color: #7d0014; color: #e0334a; }
+  .score { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; letter-spacing: .08em; color: var(--gold); }
+  .stage {
+    position: relative; border-radius: 16px; overflow: hidden; border: 2px solid #c8971a;
+    box-shadow: 0 0 0 3px #140109, 0 0 34px rgba(200,0,60,.45);
+  }
+  canvas { display: block; width: 100%; height: auto; aspect-ratio: 360 / 520; touch-action: manipulation; cursor: crosshair; -webkit-tap-highlight-color: transparent; }
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .75rem; padding: 1.3rem; text-align: center; background: rgba(6,0,10,.84); backdrop-filter: blur(3px);
+  }
+  .overlay.hidden { display: none; }
+  .overlay h2 { font-family: 'Bebas Neue', cursive; font-weight: 400; font-size: 2.1rem; letter-spacing: .06em; color: #ff6aa8; text-shadow: 0 0 14px rgba(255,45,120,.5); }
+  .overlay p { font-size: .88rem; line-height: 1.55; color: rgba(255,248,240,.82); max-width: 310px; }
+  .btn {
+    font-family: 'Bebas Neue', cursive; font-size: 1.45rem; letter-spacing: .1em; color: #fff8f0; cursor: pointer;
+    padding: .55rem 2rem; border-radius: 999px; border: 3px solid #c8971a;
+    background: radial-gradient(circle at 35% 30%, #ff3b6b, #8a0f1e 75%);
+    box-shadow: 0 0 18px rgba(255,45,120,.55); transition: transform .15s, box-shadow .2s;
+  }
+  .btn:hover { transform: scale(1.05); box-shadow: 0 0 26px rgba(255,80,120,.85); }
+  .diff { display: flex; align-items: center; gap: .5rem; font-size: .78rem; color: rgba(255,248,240,.7); }
+  .diff select {
+    font-family: inherit; font-size: .85rem; color: var(--cream); background: #1a0510;
+    border: 1px solid rgba(255,45,120,.5); border-radius: 8px; padding: .3rem .5rem;
+  }
+  .code {
+    font-family: monospace; font-size: 1.15rem; letter-spacing: .15em; color: var(--gold);
+    background: rgba(200,151,26,.12); border: 1px dashed rgba(200,151,26,.6);
+    padding: .4rem .8rem; border-radius: 8px;
+  }
+  .code.hidden { display: none; }
+  .small { font-size: .72rem !important; color: rgba(255,248,240,.5) !important; }
+  .note { margin-top: 1rem; font-size: .72rem; line-height: 1.6; color: rgba(255,248,240,.45); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pink Pony Club</h1>
+  <p class="sub">Ponele la cola al pony mientras corre 🎠<br><strong>5 intentos</strong> · si clavás los <strong>5</strong>, te llevás el labial del bazar chino.</p>
+
+  <div class="hud">
+    <div class="tails" id="tails"></div>
+    <div class="score" id="score">0/5</div>
+  </div>
+
+  <div class="stage">
+    <canvas id="c"></canvas>
+
+    <div class="overlay" id="startOv">
+      <h2>¡Al pony se le cayó la cola!</h2>
+      <p>Tocá la pantalla para lanzarle la cola justo en la colita mientras corre. Cada intento va más rápido. ¡Tenés 5 tiros!</p>
+      <button class="btn" id="btnPlay">JUGAR</button>
+    </div>
+
+    <div class="overlay hidden" id="endOv">
+      <h2 id="endTitle"></h2>
+      <p id="endMsg"></p>
+      <div class="code hidden" id="endCode"></div>
+      <p class="small" id="endSmall"></p>
+      <button class="btn" id="btnRetry">REINTENTAR</button>
+    </div>
+  </div>
+
+  <p class="note">Esta es una página de prueba: estaba aburrida.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Ajustes ─────────────────────────────────────────────
+  var W = 360, H = 520;
+  var TOTAL = 5;                   // intentos
+  var END_ON_FIRST_MISS = false;   // true = termina apenas fallás
+  var WIN_PROB = 0.05;             // chance de ganar la entrada (5%): se decide con una tirada al empezar cada partida
+  var CFG = {                      // única dificultad: la difícil. v: velocidad base · inc: aumento por intento · r: radio de acierto (px)
+    hard: { v: 175, inc: 28, r: 34 }
+  };
+  var TAIL_COLORS = ['#ff2d78', '#ff77b3', '#c084fc', '#ffb3d1', '#ff5aa5'];
+  var FLOOR_Y = 394;
+
+  // ── Canvas ──────────────────────────────────────────────
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (document.fonts && document.fonts.load) { document.fonts.load('40px "Bebas Neue"'); }
+
+  // ── Elementos ───────────────────────────────────────────
+  var startOv = document.getElementById('startOv');
+  var endOv = document.getElementById('endOv');
+  var btnPlay = document.getElementById('btnPlay');
+  var btnRetry = document.getElementById('btnRetry');
+  var tailsEl = document.getElementById('tails');
+  var scoreEl = document.getElementById('score');
+  var endTitle = document.getElementById('endTitle');
+  var endMsg = document.getElementById('endMsg');
+  var endCode = document.getElementById('endCode');
+  var endSmall = document.getElementById('endSmall');
+
+  // ── Estado ──────────────────────────────────────────────
+  var state = 'idle';            // idle | playing | ending | over
+  var cfgKey = 'hard';
+  var winRun = false, doomedAt = 0;   // tirada oculta de la partida (ver startGame)
+  var done = 0, hits = 0, results = [];
+  var pony = { x: 120, y: 338, dir: 1, gallop: 0, bob: 0, hop: 0, bump: 0, jp: -1, jwait: 1 };
+  var flying = null;
+  var stuck = [], hitTails = [], floats = [], sparks = [], confetti = [];
+  var tNow = 0;
+  var stars = [];
+  for (var s = 0; s < 46; s++) {
+    stars.push({ x: Math.random() * W, y: 58 + Math.random() * 300, r: Math.random() * 1.5 + 0.4, p: Math.random() * 6.28 });
+  }
+
+  // ── HUD ─────────────────────────────────────────────────
+  function updateHud() {
+    var html = '';
+    for (var i = 0; i < TOTAL; i++) {
+      var cls = 'tail-dot', txt = String(i + 1);
+      if (results[i] === true) { cls += ' hit'; txt = '✓'; }
+      else if (results[i] === false) { cls += ' miss'; txt = '✗'; }
+      html += '<div class="' + cls + '">' + txt + '</div>';
+    }
+    tailsEl.innerHTML = html;
+    scoreEl.textContent = hits + '/' + TOTAL;
+  }
+
+  function resetGame() {
+    done = 0; hits = 0; results = [];
+    hitTails = []; stuck = []; floats = []; sparks = []; confetti = []; flying = null;
+    pony.x = 120; pony.dir = 1; pony.hop = 0; pony.bump = 0; pony.jp = -1; pony.jwait = 1;
+    updateHud();
+  }
+
+  function rump() {
+    return { x: pony.x - pony.dir * 48, y: pony.y + pony.bob - 10 - pony.hop };
+  }
+
+  // ── Lanzamiento ─────────────────────────────────────────
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    if (state !== 'playing' || flying) return;
+    var rc = canvas.getBoundingClientRect();
+    var x = (e.clientX - rc.left) * W / rc.width;
+    var y = (e.clientY - rc.top) * H / rc.height;
+    // El acierto se decide donde el pony ESTÁ al tocar (lo que ve la jugadora), no donde estará al aterrizar.
+    var r0 = rump();
+    var R = CFG[cfgKey].r;
+    var isHit = Math.hypot(x - r0.x, y - r0.y) <= R;
+    if (winRun) { isHit = true; x = r0.x; y = r0.y; }
+    else if (done === doomedAt && isHit) {
+      var a = Math.random() * 6.283;
+      x = r0.x + Math.cos(a) * (R + 16); y = r0.y + Math.sin(a) * (R + 16);
+      isHit = false;
+    }
+    flying = { sx: W / 2, sy: H - 30, tx: x, ty: y, t: 0, dur: 0.17, hit: isHit };
+  });
+
+  function burst(x, y, n, colors) {
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.283, v = 60 + Math.random() * 150;
+      sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: 0.7 + Math.random() * 0.5, t: 0,
+                    c: colors[Math.floor(Math.random() * colors.length)] });
+    }
+  }
+
+  function land(f) {
+    var r = rump();
+    var hit = f.hit;
+    if (hit) {
+      hits++; results.push(true);
+      hitTails.push({ c: TAIL_COLORS[(hits - 1) % TAIL_COLORS.length] });
+      pony.bump = 12;
+      burst(r.x, r.y, 26, ['#ff2d78', '#ffb3d1', '#ffd98a', '#fff8e1']);
+      floats.push({ x: r.x, y: r.y - 24, txt: '¡CLAVADA!', c: '#ffd1e6', t: 0 });
+    } else {
+      results.push(false);
+      stuck.push({ x: f.tx, y: f.ty, rot: (Math.random() - 0.5) * 1.2, age: 0 });
+      floats.push({ x: f.tx, y: f.ty - 20, txt: '¡Fallaste!', c: '#ff5a6a', t: 0 });
+    }
+    done++;
+    flying = null;
+    updateHud();
+    if (done >= TOTAL || (END_ON_FIRST_MISS && !hit)) {
+      state = 'ending';
+      setTimeout(finish, 850);
+    }
+  }
+
+  function randCode() {
+    var c = '';
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for (var i = 0; i < 3; i++) c += chars.charAt(Math.floor(Math.random() * chars.length));
+    return 'MAISONROAN-' + c;
+  }
+
+  function finish() {
+    state = 'over';
+    if (hits === TOTAL) {
+      endTitle.textContent = '🎟️ ¡' + TOTAL + '/' + TOTAL + '! ¡GANASTE!';
+      endMsg.textContent = 'Mentira, no ganaste nada. Me debés una cerveza. 🍺';
+      endCode.textContent = randCode();
+      endCode.classList.remove('hidden');
+      endSmall.textContent = '';
+      for (var i = 0; i < 140; i++) {
+        confetti.push({
+          x: Math.random() * W, y: -10 - Math.random() * 120,
+          vx: (Math.random() - 0.5) * 90, vy: 60 + Math.random() * 120,
+          rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 9,
+          c: TAIL_COLORS.concat(['#ffd98a', '#fff8e1'])[Math.floor(Math.random() * 7)],
+          s: 4 + Math.random() * 5
+        });
+      }
+    } else {
+      endTitle.textContent = '¡Casi! ' + hits + '/' + TOTAL;
+      endMsg.textContent = 'Necesitás clavar los ' + TOTAL + ' intentos para llevarte el labial del bazar chino. ¡Probá de nuevo!';
+      endCode.classList.add('hidden');
+      endSmall.textContent = '';
+    }
+    endOv.classList.remove('hidden');
+  }
+
+  function startGame() {
+    cfgKey = 'hard';
+    // Tirada oculta: 5% de las partidas son ganadoras; en el 95% restante un intento al azar siempre falla.
+    winRun = Math.random() < WIN_PROB;
+    doomedAt = Math.floor(Math.random() * TOTAL);
+    resetGame();
+    startOv.classList.add('hidden');
+    endOv.classList.add('hidden');
+    state = 'playing';
+  }
+  btnPlay.addEventListener('click', startGame);
+  btnRetry.addEventListener('click', startGame);
+
+  // ── Update ──────────────────────────────────────────────
+  function update(dt) {
+    tNow += dt;
+
+    var c = CFG[cfgKey];
+    var base = 95;
+    if (state === 'playing' || state === 'ending') {
+      base = c.v + c.inc * Math.min(done, TOTAL - 1);
+    }
+    var sp = base * (1 + 0.16 * Math.sin(tNow * 1.9));
+    pony.x += pony.dir * sp * dt;
+    if (pony.x > W - 95) { pony.x = W - 95; pony.dir = -1; }
+    if (pony.x < 95) { pony.x = 95; pony.dir = 1; }
+    pony.gallop += dt * (sp / 16);
+    pony.bob = Math.sin(pony.gallop * 2) * 3;
+    pony.bump = Math.max(0, pony.bump - dt * 55);
+    // Saltos: cada tanto el pony pega un brinco alto (más seguidos a medida que avanzan los intentos)
+    var jumpH = 0;
+    if (state === 'playing' || state === 'ending') {
+      if (pony.jp < 0) {
+        pony.jwait -= dt;
+        if (pony.jwait <= 0) { pony.jp = 0; }
+      } else {
+        pony.jp += dt / 0.62;
+        if (pony.jp >= 1) { pony.jp = -1; pony.jwait = 0.5 + Math.random() * 0.9 - 0.06 * done; }
+        else jumpH = 4 * pony.jp * (1 - pony.jp) * 78;
+      }
+    } else { pony.jp = -1; }
+    pony.hop = pony.bump + jumpH;
+
+    if (flying) {
+      flying.t += dt;
+      if (flying.t >= flying.dur) land(flying);
+    }
+    for (var i = 0; i < stuck.length; i++) stuck[i].age += dt;
+
+    for (i = sparks.length - 1; i >= 0; i--) {
+      var p = sparks[i];
+      p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt;
+      if (p.t > p.life) sparks.splice(i, 1);
+    }
+    for (i = confetti.length - 1; i >= 0; i--) {
+      var q = confetti[i];
+      q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 60 * dt; q.rot += q.vr * dt;
+      if (q.y > H + 20) confetti.splice(i, 1);
+    }
+    for (i = floats.length - 1; i >= 0; i--) {
+      floats[i].t += dt; floats[i].y -= 34 * dt;
+      if (floats[i].t > 1.1) floats.splice(i, 1);
+    }
+  }
+
+  // ── Dibujo ──────────────────────────────────────────────
+  function star4(x, y, r, col) {
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.quadraticCurveTo(x, y, x, y + r);
+    ctx.quadraticCurveTo(x, y, x - r, y);
+    ctx.quadraticCurveTo(x, y, x, y - r);
+    ctx.fill();
+  }
+
+  function drawTail(x, y, rot, sc, col, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = col; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(0, -14); ctx.bezierCurveTo(-14, -4, 12, 8, -2, 26); ctx.stroke();
+    ctx.strokeStyle = '#ffd1e6'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(1, -12); ctx.bezierCurveTo(-9, -3, 9, 8, 0, 22); ctx.stroke();
+    ctx.fillStyle = '#ffd98a';
+    ctx.beginPath(); ctx.arc(0, -15, 4.5, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBackground() {
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#16030c'); g.addColorStop(1, '#06000a');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    var sp = ctx.createRadialGradient(W / 2, 0, 10, W / 2, 90, 330);
+    sp.addColorStop(0, 'rgba(255,205,150,0.22)'); sp.addColorStop(1, 'rgba(255,205,150,0)');
+    ctx.fillStyle = sp; ctx.fillRect(0, 0, W, FLOOR_Y);
+
+    // estrellas
+    for (var i = 0; i < stars.length; i++) {
+      var st = stars[i];
+      ctx.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(tNow * 1.4 + st.p));
+      ctx.fillStyle = i % 3 === 0 ? '#ffb3d1' : '#ffffff';
+      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // cenefa de carpa
+    for (var x = 0; x < W; x += 30) {
+      var col = ((x / 30) % 2 === 0) ? '#8a0f1e' : '#140109';
+      ctx.fillStyle = col;
+      ctx.fillRect(x, 0, 30, 34);
+      ctx.beginPath(); ctx.arc(x + 15, 34, 15, 0, Math.PI); ctx.fill();
+    }
+    ctx.fillStyle = '#c8971a'; ctx.fillRect(0, 0, W, 5);
+
+    // cartel de neón
+    var flick = Math.sin(tNow * 13) > 0.965 ? 0.55 : 1;
+    ctx.save();
+    ctx.globalAlpha = flick;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '44px "Bebas Neue", Impact, sans-serif';
+    ctx.shadowColor = '#ff2d78'; ctx.shadowBlur = 22;
+    ctx.fillStyle = '#ffd1e6';
+    ctx.fillText('PINK PONY CLUB', W / 2, 112);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // piso
+    var fl = ctx.createLinearGradient(0, FLOOR_Y, 0, H);
+    fl.addColorStop(0, '#2a0714'); fl.addColorStop(1, '#0a0208');
+    ctx.fillStyle = fl; ctx.fillRect(0, FLOOR_Y, W, H - FLOOR_Y);
+    ctx.fillStyle = '#c8971a'; ctx.fillRect(0, FLOOR_Y, W, 3);
+    ctx.strokeStyle = 'rgba(255,45,120,0.12)'; ctx.lineWidth = 1;
+    for (var k = 0; k <= 8; k++) {
+      ctx.beginPath(); ctx.moveTo(W / 2, FLOOR_Y); ctx.lineTo(k * (W / 8), H); ctx.stroke();
+    }
+  }
+
+  function leg(hx, phase, col) {
+    var a = Math.sin(pony.gallop + phase) * 0.75;
+    var kx = hx + Math.sin(a) * 17, ky = 18 + Math.cos(a) * 18;
+    var lift = Math.max(0, Math.sin(pony.gallop + phase + 1.2)) * 10;
+    var fx = kx + Math.sin(a * 1.3 - 0.5) * 14, fy = ky + 19 - lift * 0.4;
+    ctx.strokeStyle = col; ctx.lineWidth = 9; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(hx, 16); ctx.lineTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke();
+    ctx.fillStyle = '#3a0a24';
+    ctx.beginPath(); ctx.arc(fx, fy + 2, 5, 0, 6.283); ctx.fill();
+  }
+
+  function drawPony() {
+    // sombra
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.beginPath(); ctx.ellipse(pony.x, FLOOR_Y + 5, 58, 7, 0, 0, 6.283); ctx.fill();
+
+    ctx.save();
+    ctx.translate(pony.x, pony.y + pony.bob - pony.hop);
+    ctx.scale(pony.dir, 1);
+
+    // zona de la colita (anillo)
+    if (state === 'playing') {
+      ctx.save();
+      ctx.translate(-48, -10);
+      var rr = CFG[cfgKey].r * (0.94 + 0.06 * Math.sin(tNow * 6));
+      ctx.setLineDash([6, 6]); ctx.lineDashOffset = -tNow * 22;
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, rr, 0, 6.283); ctx.stroke();
+      ctx.setLineDash([]);
+      star4(0, 0, 6 + 2 * Math.sin(tNow * 8), '#ffd98a');
+      ctx.restore();
+    }
+
+    // patas lejanas
+    leg(-30, 0, '#d6256f');
+    leg(30, Math.PI, '#d6256f');
+
+    // colas ya puestas
+    for (var i = 0; i < hitTails.length; i++) {
+      var sway = Math.sin(tNow * 7 + i * 1.3 + pony.gallop) * 8;
+      ctx.strokeStyle = hitTails[i].c; ctx.lineWidth = 6; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-48, -10);
+      ctx.bezierCurveTo(-70, -18 + i * 2, -78 + sway, 6, -62 - i * 4 + sway * 0.5, 24 + i * 4);
+      ctx.stroke();
+    }
+
+    // cuerpo
+    var bg = ctx.createLinearGradient(0, -27, 0, 27);
+    bg.addColorStop(0, '#ff8cc0'); bg.addColorStop(1, '#ff3d8b');
+    ctx.fillStyle = bg; ctx.strokeStyle = '#c3135f'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(0, 0, 52, 27, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.beginPath(); ctx.ellipse(-4, 8, 38, 10, 0, 0, 6.283); ctx.fill();
+    star4(-8, -2, 7, '#ffe9a8');
+
+    // patas cercanas
+    leg(-30, Math.PI, '#ff5aa5');
+    leg(30, 0, '#ff5aa5');
+
+    // cuello
+    ctx.fillStyle = bg; ctx.strokeStyle = '#c3135f'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(24, -18); ctx.lineTo(44, -52); ctx.lineTo(68, -50); ctx.lineTo(52, -4); ctx.lineTo(30, 6);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // crin
+    var mc = ['#c084fc', '#ff77b3', '#c084fc', '#ff77b3', '#c084fc', '#ff77b3'];
+    ctx.lineWidth = 5; ctx.lineCap = 'round';
+    for (var m = 0; m < 6; m++) {
+      var p = m / 5;
+      var mx = 28 + 22 * p, my = -18 - 34 * p;
+      var ms = Math.sin(tNow * 8 + m) * 4;
+      ctx.strokeStyle = mc[m];
+      ctx.beginPath(); ctx.moveTo(mx, my); ctx.quadraticCurveTo(mx - 12, my + 6 + ms, mx - 21 + ms, my + 18); ctx.stroke();
+    }
+
+    // cabeza
+    ctx.save();
+    ctx.translate(64, -48); ctx.rotate(0.45);
+    ctx.fillStyle = bg; ctx.strokeStyle = '#c3135f'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(0, 0, 24, 13, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ff9cc8';
+    ctx.beginPath(); ctx.ellipse(18, 3, 10, 9, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#3a0a24';
+    ctx.beginPath(); ctx.arc(4, -3, 2.8, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(4.8, -3.8, 1, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#a30c4d';
+    ctx.beginPath(); ctx.arc(22, 3, 1.5, 0, 6.283); ctx.fill();
+    ctx.restore();
+
+    // oreja
+    ctx.fillStyle = '#e8277a'; ctx.strokeStyle = '#c3135f'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(50, -58); ctx.lineTo(57, -76); ctx.lineTo(63, -58); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // sombrero rosa
+    ctx.save();
+    ctx.translate(56, -66);
+    ctx.rotate(Math.sin(pony.gallop * 2) * 0.04 - 0.08);
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ff2d78'; ctx.strokeStyle = '#a30c4d'; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(-33, -9);
+    ctx.quadraticCurveTo(-23, 8, 0, 8);
+    ctx.quadraticCurveTo(23, 8, 33, -9);
+    ctx.quadraticCurveTo(23, 0, 0, 0);
+    ctx.quadraticCurveTo(-23, 0, -33, -9);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ff5aa5';
+    ctx.beginPath();
+    ctx.moveTo(-14, 1); ctx.lineTo(-13, -19);
+    ctx.quadraticCurveTo(-6, -26, 0, -19);
+    ctx.quadraticCurveTo(6, -26, 13, -19);
+    ctx.lineTo(14, 1); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffd1e6';
+    ctx.fillRect(-14, -7, 28, 5);
+    star4(0, -4.5, 3.2, '#fff8e1');
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawBackground();
+    drawPony();
+
+    // colas falladas
+    for (var i = 0; i < stuck.length; i++) {
+      var s = stuck[i];
+      drawTail(s.x, s.y, s.rot, 0.9, '#8a5a70', Math.max(0.35, 1 - s.age * 0.15));
+    }
+
+    // cola en vuelo
+    if (flying) {
+      var p = Math.min(1, flying.t / flying.dur);
+      var fx = flying.sx + (flying.tx - flying.sx) * p;
+      var fy = flying.sy + (flying.ty - flying.sy) * p - Math.sin(p * Math.PI) * 40;
+      drawTail(fx, fy, p * 9, 0.9 - p * 0.15, '#ff2d78', 1);
+    } else if (state === 'playing') {
+      // cola lista para lanzar
+      drawTail(W / 2, H - 38 + Math.sin(tNow * 3) * 3, 0, 1, TAIL_COLORS[hits % TAIL_COLORS.length], 1);
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = '15px "Bebas Neue", Impact, sans-serif';
+      ctx.fillStyle = 'rgba(255,248,240,0.6)';
+      if (done === 0) ctx.fillText('TOCÁ LA PANTALLA PARA LANZAR', W / 2, H - 6);
+      else ctx.fillText('INTENTO ' + Math.min(done + 1, TOTAL) + ' DE ' + TOTAL, W / 2, H - 6);
+      ctx.restore();
+    }
+
+    // chispas
+    for (i = 0; i < sparks.length; i++) {
+      var sp = sparks[i];
+      ctx.globalAlpha = Math.max(0, 1 - sp.t / sp.life);
+      ctx.fillStyle = sp.c;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.6, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // confeti
+    for (i = 0; i < confetti.length; i++) {
+      var q = confetti[i];
+      ctx.save();
+      ctx.translate(q.x, q.y); ctx.rotate(q.rot);
+      ctx.fillStyle = q.c;
+      ctx.fillRect(-q.s / 2, -q.s / 4, q.s, q.s / 2);
+      ctx.restore();
+    }
+
+    // textos flotantes
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = '28px "Bebas Neue", Impact, sans-serif';
+    for (i = 0; i < floats.length; i++) {
+      var f = floats[i];
+      ctx.globalAlpha = Math.max(0, 1 - f.t / 1.1);
+      ctx.fillStyle = f.c;
+      ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 6;
+      ctx.fillText(f.txt, f.x, f.y);
+    }
+    ctx.restore();
+  }
+
+  // ── Loop ────────────────────────────────────────────────
+  var last = 0;
+  function loop(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000) || 0.016;
+    last = ts;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  updateHud();
+  requestAnimationFrame(function (ts) { last = ts; loop(ts); });
+})();
+</script>
+</body>
+</html>
