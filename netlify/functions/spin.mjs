@@ -1,23 +1,17 @@
-// Netlify Function: Ruleta Feliza — 1 entrada por semana de octubre (4 en total).
-// Coloca este archivo en:  netlify/functions/spin.mjs
-//
-// Requiere el paquete @netlify/blobs (ver package.json).
-// Netlify provee el almacenamiento "Blobs" automáticamente a las Functions en el sitio publicado.
-
 import { getStore } from '@netlify/blobs';
 
-// ─── Configuración ───────────────────────────────────────────────
-const YEAR = 2026;   // Año de la campaña (solo se puede ganar en octubre de este año)
-const WIN_PROB = 0.20; // Probabilidad de que un giro gane, mientras la entrada de esa semana siga libre
+const YEAR = 2026;
+const WIN_PROB = 0.05;
+const TOTAL = 5;
 const TZ = 'America/Argentina/Buenos_Aires';
-// Semanas de octubre:  Sem1: 1–7 · Sem2: 8–14 · Sem3: 15–21 · Sem4: 22–31
+const CLOSED_WEEKS = [1, 2];
+const WEEK_START = [1, 8, 15, 22];
 function weekOf(day) {
   if (day <= 7) return 1;
   if (day <= 14) return 2;
   if (day <= 21) return 3;
   return 4;
 }
-// ─────────────────────────────────────────────────────────────────
 
 function arNow() {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -35,7 +29,7 @@ function readCookie(header, name) {
 }
 
 function makeCode() {
-  return 'FELIZA-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+  return 'CHAPPELLWEEN-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 }
 
 export default async (req) => {
@@ -43,7 +37,6 @@ export default async (req) => {
   const now = arNow();
   const baseHeaders = { 'content-type': 'application/json', 'cache-control': 'no-store' };
 
-  // Identificar al visitante con una cookie (anti-spam del giro diario)
   let uid = readCookie(req.headers.get('cookie'), 'fz_uid');
   const setCookie = [];
   if (!uid) {
@@ -56,12 +49,6 @@ export default async (req) => {
     headers: setCookie.length ? { ...baseHeaders, 'set-cookie': setCookie.join(', ') } : baseHeaders
   });
 
-  // Solo se gira/gana con POST (evita giros accidentales por prefetch)
-  if (req.method !== 'POST') {
-    return respond({ ok: true, hint: 'POST para girar' });
-  }
-
-  // La campaña solo está activa en octubre del año configurado
   if (!(now.y === YEAR && now.m === 10)) {
     return respond({ closed: true });
   }
@@ -69,36 +56,70 @@ export default async (req) => {
   const week = weekOf(now.d);
   const weekKey = `week:${YEAR}-W${week}`;
   const userKey = `user:${uid}`;
-
-  // Límite: 1 giro por día por usuario
-  const userRec = await store.get(userKey, { type: 'json' });
-  if (userRec && userRec.date === now.date) {
-    return respond({ alreadyToday: true, result: userRec.result, code: userRec.code || null, week });
-  }
-
-  // Decidir resultado
-  let result = 'none';
-  let wonCode = null;
+  const nextDay = week < 4 ? WEEK_START[week] : null;
 
   const weekRec = await store.get(weekKey, { type: 'json' });
-  const claimed = !!(weekRec && weekRec.claimed);
+  const weekTaken = CLOSED_WEEKS.includes(week) || !!(weekRec && weekRec.claimed);
 
-  if (!claimed && Math.random() < WIN_PROB) {
-    wonCode = makeCode();
-    const claim = { claimed: true, code: wonCode, uid, at: new Date().toISOString() };
-    let ok = true;
-    try {
-      // Escritura condicional: solo si NADIE reclamó aún esta semana (garantiza 1 sola entrada/semana)
-      const res = await store.setJSON(weekKey, claim, { onlyIfNew: true });
-      if (res && res.modified === false) ok = false;
-    } catch (e) {
-      ok = false; // otro giro la reclamó primero
-    }
-    if (ok) { result = 'ticket'; } else { result = 'none'; wonCode = null; }
+  if (req.method !== 'POST') {
+    return respond({ ok: true, week, weekTaken, nextDay });
   }
 
-  // Registrar el giro del día de este usuario
-  await store.setJSON(userKey, { date: now.date, result, code: wonCode });
+  let body = {};
+  try { body = await req.json(); } catch (e) { body = {}; }
+  const action = body && body.action;
 
-  return respond({ result, code: wonCode, week });
+  const userRec = await store.get(userKey, { type: 'json' });
+  const playedToday = !!(userRec && userRec.date === now.date);
+
+  if (action === 'start') {
+    if (playedToday) {
+      return respond({
+        alreadyToday: true,
+        result: userRec.status === 'done' ? userRec.result : 'none',
+        code: userRec.code || null, week
+      });
+    }
+    if (weekTaken) {
+      return respond({ weekTaken: true, week, nextDay });
+    }
+    const win = Math.random() < WIN_PROB;
+    await store.setJSON(userKey, { date: now.date, status: 'started', win, result: 'none', code: null });
+    return respond({ ok: true, win, total: TOTAL, week });
+  }
+
+  if (action === 'finish') {
+    if (!userRec || userRec.date !== now.date) {
+      return respond({ error: 'no-game' });
+    }
+    if (userRec.status === 'done') {
+      return respond({ result: userRec.result, code: userRec.code || null, week });
+    }
+
+    let result = 'none';
+    let wonCode = null;
+    let taken = false;
+
+    if (userRec.win && Number(body.hits) === TOTAL) {
+      if (weekTaken) {
+        taken = true;
+      } else {
+        const code = makeCode();
+        const claim = { claimed: true, code, uid, at: new Date().toISOString() };
+        let ok = true;
+        try {
+          const res = await store.setJSON(weekKey, claim, { onlyIfNew: true });
+          if (res && res.modified === false) ok = false;
+        } catch (e) {
+          ok = false;
+        }
+        if (ok) { result = 'ticket'; wonCode = code; } else { taken = true; }
+      }
+    }
+
+    await store.setJSON(userKey, { date: now.date, status: 'done', win: userRec.win, result, code: wonCode });
+    return respond({ result, code: wonCode, taken, week, nextDay });
+  }
+
+  return respond({ error: 'bad-request' });
 };
