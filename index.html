@@ -1430,7 +1430,7 @@
 
       <div class="pp-overlay" id="ppStartOv">
         <h3 id="ppStartTitle">¡Al pony se le cayó la cola!</h3>
-        <p id="ppStartMsg">Tocá la pantalla para clavarle la cola justo en la colita mientras corre, salta y cambia de dirección. Sin guía, cada intento va más rápido. ¡Modo hardcore, 5 tiros!</p>
+        <p id="ppStartMsg">Tocá la pantalla para clavarle la cola justo en la colita mientras corre, salta y cambia de dirección. Sin guía, cada intento va más rápido.</p>
         <div class="pp-code hidden" id="ppStartCode"></div>
         <button class="pp-btn" id="ppBtnPlay">JUGAR</button>
       </div>
@@ -2371,7 +2371,7 @@
 
   var API = '/.netlify/functions/spin';
   var STORE_KEY = 'felizaPonyClub';
-  var busy = false, demo = false, finishing = false, practice = false, practiceNext = null;
+  var busy = false, demo = false, finishing = false, practice = false, practiceNext = null, practiceReason = 'taken', canTrain = false;
   function lang() { return (window.currentLang === 'en') ? 'en' : 'es'; }
   function L(es, en) { return lang() === 'en' ? en : es; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
@@ -2401,7 +2401,7 @@
       : L('Ya se sortearon todas las entradas de octubre, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Gracias por jugar! 🎃', 'All October tickets have been raffled, but you can still play to train those fingers and your aim. Thanks for playing! 🎃');
   }
   function enterPractice(nextDay) {
-    practice = true; practiceNext = nextDay || null;
+    practice = true; practiceNext = nextDay || null; practiceReason = 'taken';
     startTitle.textContent = '🎟️ ' + L('¡Entrada sorteada!', 'Ticket raffled!');
     startMsg.innerHTML = weekTakenMsg(nextDay);
     startCode.classList.add('hidden');
@@ -2414,9 +2414,22 @@
     return L('Ya jugaste hoy. ¡Volvé mañana! 🎃', 'You already played today. Come back tomorrow! 🎃');
   }
 
+  function enterUsed(res, code) {
+    practice = true; practiceNext = null; practiceReason = 'used';
+    startTitle.textContent = res === 'ticket' ? '🎟️ ' + L('¡Hasta mañana!', 'See you tomorrow!') : '🎃 ' + L('Ya intentaste hoy', 'You already tried today');
+    startMsg.innerHTML = res === 'ticket'
+      ? usedMsg('ticket') + ' ' + L('Y si querés, ejercitá tus dedos y puntería.', 'And if you want, train your fingers and aim.')
+      : L('Ya intentaste ganar pero lo nuestro fue casual. Intentá mañana o ejercitá tus dedos y puntería ahora.', 'You already tried to win, but ours was a casual thing. Try again tomorrow or train your fingers and aim now.');
+    if (code) { startCode.textContent = code; startCode.classList.remove('hidden'); } else { startCode.classList.add('hidden'); }
+    btnPlay.textContent = L('EJERCITAR DEDOS Y PUNTERÍA', 'TRAIN FINGERS AND AIM');
+    btnPlay.style.display = '';
+    btnPlay.style.fontSize = '1.15rem'; btnPlay.style.lineHeight = '1.15'; btnPlay.style.maxWidth = '280px'; btnPlay.style.borderRadius = '26px'; btnPlay.style.padding = '.6rem 1.4rem';
+    startOv.classList.remove('hidden'); endOv.classList.add('hidden');
+  }
+
   var st0 = getStore();
   if (st0 && st0.date === today()) {
-    lockStart(L('🎃 ¡Hasta mañana!', '🎃 See you tomorrow!'), usedMsg(st0.result), st0.code);
+    enterUsed(st0.result, st0.code);
   } else {
     fetch(API, { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
       if (d && d.closed) {
@@ -2444,7 +2457,7 @@
     post({ action: 'start' }).then(function (d) {
       busy = false; btnPlay.disabled = false;
       if (d.closed) { lockStart('Pink Pony Club', L('El juego está activo en octubre. ¡Volvé en esa fecha! 🎃', 'The game runs during October. Come back then! 🎃')); return; }
-      if (d.alreadyToday) { setStore({ date: today(), result: d.result, code: d.code || null }); lockStart(L('🎃 ¡Hasta mañana!', '🎃 See you tomorrow!'), usedMsg(d.result), d.code); return; }
+      if (d.alreadyToday) { setStore({ date: today(), result: d.result, code: d.code || null }); enterUsed(d.result, d.code); return; }
       if (d.weekTaken) { enterPractice(d.nextDay); startOv.classList.remove('hidden'); return; }
       if (d.ok) {
         setStore({ date: today(), result: 'none', code: null });
@@ -2459,8 +2472,8 @@
   }
   btnPlay.addEventListener('click', startGame);
   btnRetry.addEventListener('click', function () {
-    if (practice) { startGame(); return; }
-    if (state === 'over' && hits === TOTAL && winRun) validateWin();
+    if (state === 'over' && hits === TOTAL && winRun && !canTrain && !practice) { validateWin(); return; }
+    if (practice || canTrain) { practice = true; if (canTrain) practiceReason = 'used'; canTrain = false; startGame(); }
   });
 
   function showConfetti() {
@@ -2515,7 +2528,10 @@
     if (practice) {
       var perfect = hits === TOTAL;
       endTitle.textContent = perfect ? L('¡' + TOTAL + '/' + TOTAL + '! ¡Qué puntería!', TOTAL + '/' + TOTAL + '! What an aim!') : L('¡Casi! ' + hits + '/' + TOTAL, 'So close! ' + hits + '/' + TOTAL);
-      endMsg.innerHTML = L((perfect ? 'Clavaste los 5, pero esta semana ya no hay entrada. ' : 'Esta semana ya no hay entrada, pero podés seguir practicando. ') + (practiceNext ? 'Volvé el <strong>' + nextDateTxt(practiceNext) + '</strong> para jugar por la próxima. 🎃' : '🎃'),
+      if (practiceReason === 'used') {
+        endTitle.textContent = perfect ? L('¡' + TOTAL + '/' + TOTAL + '! ¡Qué puntería!', TOTAL + '/' + TOTAL + '! What an aim!') : L('¡Casi! ' + hits + '/' + TOTAL, 'So close! ' + hits + '/' + TOTAL);
+        endMsg.textContent = L('Ya intentaste ganar hoy, esto es solo práctica. Volvé mañana para tu próxima chance. 🎃', 'You already tried to win today, this is just practice. Come back tomorrow for your next chance. 🎃');
+      } else endMsg.innerHTML = L((perfect ? 'Clavaste los 5, pero esta semana ya no hay entrada. ' : 'Esta semana ya no hay entrada, pero podés seguir practicando. ') + (practiceNext ? 'Volvé el <strong>' + nextDateTxt(practiceNext) + '</strong> para jugar por la próxima. 🎃' : '🎃'),
                            (perfect ? 'You nailed all 5, but there is no ticket left this week. ' : 'There is no ticket left this week, but you can keep practicing. ') + (practiceNext ? 'Come back on <strong>' + nextDateTxt(practiceNext) + '</strong> to play for the next one. 🎃' : '🎃'));
       btnRetry.textContent = L('JUGAR DE NUEVO', 'PLAY AGAIN');
       btnRetry.style.display = '';
@@ -2526,7 +2542,12 @@
     endTitle.textContent = L('¡Casi! ' + hits + '/' + TOTAL, 'So close! ' + hits + '/' + TOTAL);
     endMsg.textContent = demo
       ? L('Modo demo — Disponible la primera semana de octubre.', 'Demo mode — Available the first week of October.')
-      : L('Necesitás clavar los ' + TOTAL + ' intentos para llevarte la entrada. Volvé mañana por otra partida. 🎃', 'You need to nail all ' + TOTAL + ' throws to win a ticket. Come back tomorrow for another game. 🎃');
+      : L('Necesitás clavar los ' + TOTAL + ' intentos para llevarte la entrada. Volvé mañana por otra chance, o ejercitá tus dedos y puntería ahora. 🎃', 'You need to nail all ' + TOTAL + ' throws to win a ticket. Come back tomorrow for another chance, or train your fingers and aim now. 🎃');
+    if (!demo) {
+      canTrain = true;
+      btnRetry.textContent = L('EJERCITAR DEDOS Y PUNTERÍA', 'TRAIN FINGERS AND AIM');
+      btnRetry.style.display = '';
+    }
     endOv.classList.remove('hidden');
   }
 
