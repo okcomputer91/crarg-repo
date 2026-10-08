@@ -2371,7 +2371,7 @@
 
   var API = '/.netlify/functions/spin';
   var STORE_KEY = 'felizaPonyClub';
-  var busy = false, demo = false, finishing = false;
+  var busy = false, demo = false, finishing = false, practice = false, practiceNext = null;
   function lang() { return (window.currentLang === 'en') ? 'en' : 'es'; }
   function L(es, en) { return lang() === 'en' ? en : es; }
   function today() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
@@ -2396,9 +2396,18 @@
   }
   function weekTakenMsg(nextDay) {
     return nextDay
-      ? L('La entrada de esta semana ya fue entregada 🎟️. ¡Volvé el <strong>' + nextDateTxt(nextDay) + '</strong> para jugar por la próxima!',
-          'This week\'s ticket has already been given away 🎟️. Come back on <strong>' + nextDateTxt(nextDay) + '</strong> to play for the next one!')
-      : L('Ya se entregaron todas las entradas de octubre. ¡Gracias por jugar! 🎃', 'All October tickets have been given away. Thanks for playing! 🎃');
+      ? L('La entrada de esta semana ya fue entregada 🎟️, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Volvé el <strong>' + nextDateTxt(nextDay) + '</strong> para jugar por la próxima!',
+          'This week\'s ticket has already been given away 🎟️, but you can still play to train those fingers and your aim. Come back on <strong>' + nextDateTxt(nextDay) + '</strong> to play for the next one!')
+      : L('Ya se entregaron todas las entradas de octubre, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Gracias por jugar! 🎃', 'All October tickets have been given away, but you can still play to train those fingers and your aim. Thanks for playing! 🎃');
+  }
+  function enterPractice(nextDay) {
+    practice = true; practiceNext = nextDay || null;
+    startTitle.textContent = '🎟️ ' + L('¡Entrada entregada!', 'Ticket given away!');
+    startMsg.innerHTML = weekTakenMsg(nextDay);
+    startCode.classList.add('hidden');
+    btnPlay.textContent = L('JUGAR PARA ENTRENAR ESOS DEDOS Y LA PUNTERÍA', 'PLAY TO TRAIN THOSE FINGERS AND YOUR AIM');
+    btnPlay.style.display = '';
+    btnPlay.style.fontSize = '1.15rem'; btnPlay.style.lineHeight = '1.15'; btnPlay.style.maxWidth = '280px'; btnPlay.style.borderRadius = '26px'; btnPlay.style.padding = '.6rem 1.4rem';
   }
   function usedMsg(res, code) {
     if (res === 'ticket') return L('Ya ganaste tu entrada hoy 🎟️. Validala por DM a <strong>@maisonroan</strong> (IG/Twitter) con este código:', 'You already won your ticket 🎟️. Validate it by DM to <strong>@maisonroan</strong> (IG/Twitter) with this code:');
@@ -2413,14 +2422,14 @@
       if (d && d.closed) {
         lockStart(L('Pink Pony Club', 'Pink Pony Club'), L('El juego está activo en octubre. ¡Volvé en esa fecha! 🎃', 'The game runs during October. Come back then! 🎃'));
       } else if (d && d.weekTaken) {
-        lockStart('🎟️ ' + L('¡Entrada entregada!', 'Ticket given away!'), weekTakenMsg(d.nextDay));
+        enterPractice(d.nextDay);
       }
     }).catch(function () {});
   }
 
   function begin(win) {
     winRun = !!win;
-    doomedAt = Math.floor(Math.random() * TOTAL);
+    doomedAt = practice ? -1 : Math.floor(Math.random() * TOTAL);
     cfgKey = 'hard';
     resetGame();
     startOv.classList.add('hidden');
@@ -2430,12 +2439,13 @@
 
   function startGame() {
     if (busy) return;
+    if (practice) { begin(false); return; }
     busy = true; btnPlay.disabled = true;
     post({ action: 'start' }).then(function (d) {
       busy = false; btnPlay.disabled = false;
       if (d.closed) { lockStart('Pink Pony Club', L('El juego está activo en octubre. ¡Volvé en esa fecha! 🎃', 'The game runs during October. Come back then! 🎃')); return; }
       if (d.alreadyToday) { setStore({ date: today(), result: d.result, code: d.code || null }); lockStart(L('🎃 ¡Hasta mañana!', '🎃 See you tomorrow!'), usedMsg(d.result), d.code); return; }
-      if (d.weekTaken) { lockStart('🎟️ ' + L('¡Entrada entregada!', 'Ticket given away!'), weekTakenMsg(d.nextDay)); return; }
+      if (d.weekTaken) { enterPractice(d.nextDay); startOv.classList.remove('hidden'); return; }
       if (d.ok) {
         setStore({ date: today(), result: 'none', code: null });
         begin(d.win);
@@ -2448,7 +2458,10 @@
     });
   }
   btnPlay.addEventListener('click', startGame);
-  btnRetry.addEventListener('click', function () { if (state === 'over' && hits === TOTAL && winRun) validateWin(); });
+  btnRetry.addEventListener('click', function () {
+    if (practice) { startGame(); return; }
+    if (state === 'over' && hits === TOTAL && winRun) validateWin();
+  });
 
   function showConfetti() {
     for (var i = 0; i < 140; i++) {
@@ -2497,6 +2510,17 @@
     if (hits === TOTAL && winRun && !demo) {
       endOv.classList.remove('hidden');
       validateWin();
+      return;
+    }
+    if (practice) {
+      var perfect = hits === TOTAL;
+      endTitle.textContent = perfect ? L('¡' + TOTAL + '/' + TOTAL + '! ¡Qué puntería!', TOTAL + '/' + TOTAL + '! What an aim!') : L('¡Casi! ' + hits + '/' + TOTAL, 'So close! ' + hits + '/' + TOTAL);
+      endMsg.innerHTML = L((perfect ? 'Clavaste los 5, pero esta semana ya no hay entrada. ' : 'Esta semana ya no hay entrada, pero podés seguir practicando. ') + (practiceNext ? 'Volvé el <strong>' + nextDateTxt(practiceNext) + '</strong> para jugar por la próxima. 🎃' : '🎃'),
+                           (perfect ? 'You nailed all 5, but there is no ticket left this week. ' : 'There is no ticket left this week, but you can keep practicing. ') + (practiceNext ? 'Come back on <strong>' + nextDateTxt(practiceNext) + '</strong> to play for the next one. 🎃' : '🎃'));
+      btnRetry.textContent = L('JUGAR DE NUEVO', 'PLAY AGAIN');
+      btnRetry.style.display = '';
+      if (perfect) showConfetti();
+      endOv.classList.remove('hidden');
       return;
     }
     endTitle.textContent = L('¡Casi! ' + hits + '/' + TOTAL, 'So close! ' + hits + '/' + TOTAL);
