@@ -1430,7 +1430,7 @@
 
       <div class="pp-overlay" id="ppStartOv">
         <h3 id="ppStartTitle">¡Al pony se le cayó la cola!</h3>
-        <p id="ppStartMsg">Tocá la pantalla para lanzarle la cola justo en la colita mientras corre y salta. Cada intento va más rápido. ¡Tenés 5 tiros!</p>
+        <p id="ppStartMsg">Tocá la pantalla para clavarle la cola justo en la colita mientras corre, salta y cambia de dirección. Sin guía, cada intento va más rápido. ¡Modo hardcore, 5 tiros!</p>
         <div class="pp-code hidden" id="ppStartCode"></div>
         <button class="pp-btn" id="ppBtnPlay">JUGAR</button>
       </div>
@@ -2261,7 +2261,7 @@
   var END_ON_FIRST_MISS = false;
   var WIN_PROB = 0.05;
   var CFG = {
-    hard: { v: 175, inc: 28, r: 34 }
+    hard: { v: 225, inc: 42, r: 17 }
   };
   var TAIL_COLORS = ['#ff2d78', '#ff77b3', '#c084fc', '#ffb3d1', '#ff5aa5'];
   var FLOOR_Y = 394;
@@ -2288,7 +2288,7 @@
   var cfgKey = 'hard';
   var winRun = false, doomedAt = 0;
   var done = 0, hits = 0, results = [];
-  var pony = { x: 120, y: 338, dir: 1, gallop: 0, bob: 0, hop: 0, bump: 0, jp: -1, jwait: 1 };
+  var pony = { x: 120, y: 338, dir: 1, gallop: 0, bob: 0, hop: 0, bump: 0, jp: -1, jwait: 1, rev: 1.2 };
   var flying = null;
   var stuck = [], hitTails = [], floats = [], sparks = [], confetti = [];
   var tNow = 0;
@@ -2312,7 +2312,7 @@
   function resetGame() {
     done = 0; hits = 0; results = [];
     hitTails = []; stuck = []; floats = []; sparks = []; confetti = []; flying = null;
-    pony.x = 120; pony.dir = 1; pony.hop = 0; pony.bump = 0; pony.jp = -1; pony.jwait = 1;
+    pony.x = 120; pony.dir = 1; pony.hop = 0; pony.bump = 0; pony.jp = -1; pony.jwait = 1; pony.rev = 1.2;
     updateHud();
   }
 
@@ -2396,13 +2396,13 @@
   }
   function weekTakenMsg(nextDay) {
     return nextDay
-      ? L('La entrada de esta semana ya fue entregada 🎟️, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Volvé el <strong>' + nextDateTxt(nextDay) + '</strong> para jugar por la próxima!',
-          'This week\'s ticket has already been given away 🎟️, but you can still play to train those fingers and your aim. Come back on <strong>' + nextDateTxt(nextDay) + '</strong> to play for the next one!')
-      : L('Ya se entregaron todas las entradas de octubre, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Gracias por jugar! 🎃', 'All October tickets have been given away, but you can still play to train those fingers and your aim. Thanks for playing! 🎃');
+      ? L('La entrada de esta semana ya se sorteó 🎟️, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Volvé el <strong>' + nextDateTxt(nextDay) + '</strong> para jugar por la próxima!',
+          'This week\'s ticket has already been raffled 🎟️, but you can still play to train those fingers and your aim. Come back on <strong>' + nextDateTxt(nextDay) + '</strong> to play for the next one!')
+      : L('Ya se sortearon todas las entradas de octubre, pero podés jugar igual para entrenar esos dedos y la puntería. ¡Gracias por jugar! 🎃', 'All October tickets have been raffled, but you can still play to train those fingers and your aim. Thanks for playing! 🎃');
   }
   function enterPractice(nextDay) {
     practice = true; practiceNext = nextDay || null;
-    startTitle.textContent = '🎟️ ' + L('¡Entrada entregada!', 'Ticket given away!');
+    startTitle.textContent = '🎟️ ' + L('¡Entrada sorteada!', 'Ticket raffled!');
     startMsg.innerHTML = weekTakenMsg(nextDay);
     startCode.classList.add('hidden');
     btnPlay.textContent = L('JUGAR PARA ENTRENAR ESOS DEDOS Y LA PUNTERÍA', 'PLAY TO TRAIN THOSE FINGERS AND YOUR AIM');
@@ -2538,10 +2538,17 @@
     if (state === 'playing' || state === 'ending') {
       base = c.v + c.inc * Math.min(done, TOTAL - 1);
     }
-    var sp = base * (1 + 0.16 * Math.sin(tNow * 1.9));
+    var sp = base * (1 + 0.3 * Math.sin(tNow * 2.3));
     pony.x += pony.dir * sp * dt;
     if (pony.x > W - 95) { pony.x = W - 95; pony.dir = -1; }
     if (pony.x < 95) { pony.x = 95; pony.dir = 1; }
+    if (state === 'playing') {
+      pony.rev -= dt;
+      if (pony.rev <= 0) {
+        if (Math.random() < 0.55) pony.dir = -pony.dir;
+        pony.rev = 0.7 + Math.random() * 1.1;
+      }
+    }
     pony.gallop += dt * (sp / 16);
     pony.bob = Math.sin(pony.gallop * 2) * 3;
     pony.bump = Math.max(0, pony.bump - dt * 55);
@@ -2551,9 +2558,9 @@
         pony.jwait -= dt;
         if (pony.jwait <= 0) { pony.jp = 0; }
       } else {
-        pony.jp += dt / 0.62;
-        if (pony.jp >= 1) { pony.jp = -1; pony.jwait = 0.5 + Math.random() * 0.9 - 0.06 * done; }
-        else jumpH = 4 * pony.jp * (1 - pony.jp) * 78;
+        pony.jp += dt / 0.5;
+        if (pony.jp >= 1) { pony.jp = -1; pony.jwait = Math.max(0.12, 0.35 + Math.random() * 0.7 - 0.05 * done); }
+        else jumpH = 4 * pony.jp * (1 - pony.jp) * 92;
       }
     } else { pony.jp = -1; }
     pony.hop = pony.bump + jumpH;
@@ -2731,12 +2738,9 @@
     if (state === 'playing') {
       ctx.save();
       ctx.translate(-48, -10);
-      var rr = CFG[cfgKey].r * (0.94 + 0.06 * Math.sin(tNow * 6));
-      ctx.setLineDash([6, 6]); ctx.lineDashOffset = -tNow * 22;
-      ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(0, 0, rr, 0, 6.283); ctx.stroke();
-      ctx.setLineDash([]);
-      star4(0, 0, 6 + 2 * Math.sin(tNow * 8), '#ffd98a');
+      ctx.globalAlpha = 0.55;
+      star4(0, 0, 4 + 1.5 * Math.sin(tNow * 8), '#ffd98a');
+      ctx.globalAlpha = 1;
       ctx.restore();
     }
 
