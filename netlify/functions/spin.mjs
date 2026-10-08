@@ -4,11 +4,10 @@ const YEAR = 2026;
 const WIN_PROB = 0.05;
 const TOTAL = 5;
 const TZ = 'America/Argentina/Buenos_Aires';
-const CLOSED_WEEKS = [1, 2];
-const WEEK_START = [1, 8, 15, 22];
+const CLOSED_WEEKS = [1];
+const NEXT_DAY = { 1: 8, 3: 22, 4: null };
 function weekOf(day) {
   if (day <= 7) return 1;
-  if (day <= 14) return 2;
   if (day <= 21) return 3;
   return 4;
 }
@@ -56,7 +55,7 @@ export default async (req) => {
   const week = weekOf(now.d);
   const weekKey = `week:${YEAR}-W${week}`;
   const userKey = `user:${uid}`;
-  const nextDay = week < 4 ? WEEK_START[week] : null;
+  const nextDay = NEXT_DAY[week];
 
   const weekRec = await store.get(weekKey, { type: 'json' });
   const weekTaken = CLOSED_WEEKS.includes(week) || !!(weekRec && weekRec.claimed);
