@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>The Subway · Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+<style>
+  :root { --pink:#ff4fa3; --hot:#ff2d95; --violet:#8b5cf6; --cream:#fff0f7; --ink:#0b0418; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; overflow-x: hidden; }
+  body {
+    font-family: 'VT323', monospace; color: var(--cream); min-height: 100vh;
+    background:
+      radial-gradient(ellipse 80% 45% at 50% 0%, rgba(139,92,246,.35), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(255,45,149,.22), transparent 70%),
+      var(--ink);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 14px 32px; text-align: center; }
+  h1 {
+    font-family: 'Press Start 2P', monospace; font-weight: 400; letter-spacing: .04em;
+    font-size: clamp(1.15rem, 6.2vw, 1.9rem); line-height: 1.25; color: #ffd1ec;
+    text-shadow: 0 0 6px #ff4fa3, 0 0 18px #ff2d95, 0 0 34px #8b5cf6;
+  }
+  .sub { font-size: 1.3rem; line-height: 1.15; color: rgba(255,240,247,.82); margin: .7rem 0 1rem; }
+  .sub strong { color: #ffb3dd; font-weight: 400; }
+  .hud {
+    display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap;
+    padding: .45rem .65rem; margin-bottom: .6rem; border: 3px solid #5b21b6; background: #14072a;
+    box-shadow: 0 0 0 3px #0b0418, 0 0 18px rgba(139,92,246,.45);
+  }
+  .hearts { display: flex; gap: 5px; }
+  .hearts svg { width: 26px; height: 22px; display: block; shape-rendering: crispEdges; }
+  .stat { font-family: 'Press Start 2P', monospace; font-size: .6rem; color: #ffd1ec; letter-spacing: .02em; white-space: nowrap; }
+  .stat b { font-weight: 400; color: #ff7ac6; }
+  .pause {
+    font-family: 'Press Start 2P', monospace; font-size: .6rem; color: #ffd1ec; cursor: pointer;
+    background: #3b1a78; border: 3px solid #ff4fa3; padding: .45rem .6rem; line-height: 1;
+    box-shadow: 3px 3px 0 #0b0418;
+  }
+  .pause:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #0b0418; }
+  .pause:disabled { opacity: .45; cursor: default; }
+  .stage {
+    position: relative; overflow: hidden; border: 4px solid #ff4fa3; background: #0b0418;
+    box-shadow: 0 0 0 4px #0b0418, 0 0 36px rgba(255,45,149,.5), 0 0 70px rgba(139,92,246,.35);
+  }
+  canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .prog { height: 8px; margin: -.2rem 0 .6rem; border: 2px solid #5b21b6; background: #14072a; }
+  .prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #8b5cf6, #ff4fa3); box-shadow: 0 0 8px #ff4fa3; }
+  .plane { width: 120px; height: 56px; animation: fly 2.4s ease-in-out infinite alternate; }
+  .plane svg { width: 100%; height: 100%; display: block; shape-rendering: crispEdges; }
+  @keyframes fly { from { transform: translate(-26px, 4px) rotate(-3deg); } to { transform: translate(26px, -6px) rotate(-8deg); } }
+  .win h2 { font-size: clamp(.78rem, 3.8vw, 1.1rem); }
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .6rem; padding: .7rem; text-align: center; background: rgba(11,4,24,.84);
+  }
+  .overlay.hidden { display: none; }
+  .overlay h2 {
+    font-family: 'Press Start 2P', monospace; font-weight: 400; font-size: clamp(.9rem, 4.4vw, 1.3rem); line-height: 1.4;
+    color: #ffd1ec; text-shadow: 0 0 8px #ff2d95, 0 0 20px #8b5cf6;
+  }
+  .overlay p { font-size: 1.28rem; line-height: 1.1; color: rgba(255,240,247,.9); max-width: 400px; }
+  .overlay p strong { font-weight: 400; color: #ff9bd0; }
+  .btn {
+    font-family: 'Press Start 2P', monospace; font-size: .8rem; color: #fff0f7; cursor: pointer;
+    padding: .8rem 1.2rem; background: #ff2d95; border: 4px solid #ffd1ec; line-height: 1;
+    box-shadow: 4px 4px 0 #5b21b6, 0 0 20px rgba(255,45,149,.6);
+  }
+  .btn:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 #5b21b6; }
+  @media (max-width: 480px) {
+    .plane { width: 84px; height: 40px; }
+    .overlay { gap: .4rem; }
+    .overlay p { font-size: 1.12rem; }
+    .btn { font-size: .68rem; padding: .65rem 1rem; }
+  }
+  .keys { margin-top: .8rem; font-size: 1.15rem; color: rgba(255,240,247,.6); line-height: 1.1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>THE SUBWAY</h1>
+  <p class="sub">Corré por el andén y <strong>saltá los recuerdos de ella</strong>. No dejes que te alcancen.</p>
+
+  <div class="hud">
+    <div class="hearts" id="hearts"></div>
+    <div class="stat">DIST <b id="dist">0</b>/2000 m</div>
+    <div class="stat">RECUERDOS <b id="mem">0</b></div>
+    <button class="pause" id="btnPause" disabled>PAUSA</button>
+  </div>
+
+  <div class="prog"><i id="progBar"></i></div>
+
+  <div class="stage">
+    <canvas id="c" width="832" height="468"></canvas>
+
+    <div class="overlay" id="startOv">
+      <h2>PRÓXIMA ESTACIÓN:<br>EZEIZA</h2>
+      <p>Saltá las valijas con recuerdos y llegá a la meta: <strong>2000 m</strong>. Tenés <strong>3 vidas</strong>.</p>
+      <button class="btn" id="btnPlay">JUGAR</button>
+    </div>
+
+    <div class="overlay hidden" id="pauseOv">
+      <h2>EN PAUSA</h2>
+      <p>Está Hot to go la cosa. Los recuerdos te esperan.</p>
+      <button class="btn" id="btnResume">SEGUIR</button>
+    </div>
+
+    <div class="overlay hidden win" id="winOv">
+      <div class="plane" id="plane"></div>
+      <h2>La salida es Ezeiza hacia Saskatchewan</h2>
+      <p id="winMsg"></p>
+      <button class="btn" id="btnAgain">VOLVER A EMPEZAR</button>
+    </div>
+
+    <div class="overlay hidden" id="overOv">
+      <h2>FIN DEL VIAJE</h2>
+      <p id="overMsg"></p>
+      <button class="btn" id="btnRetry">OTRA VUELTA</button>
+    </div>
+  </div>
+
+  <p class="keys">Tocá la pantalla, ESPACIO o ↑ para saltar · mantené apretado para saltar más alto</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var LW = 208, LH = 117, SC = 4;
+  var FLOOR = 92;
+  var P_X = 40;
+  var GRAV = 900, JUMP_V = 300;
+  var LIVES = 3;
+  var GOAL = 2000;
+  var PLANE = [
+    '..PP..........................',
+    '..PPP.........................',
+    '..WPPP........................',
+    '..WWPPP.......................',
+    '.WWWWWWWWWWWWWWWWWWWWWWWW.....',
+    'WWWWWWWWWWWWWWWWWWWWWWWWWWW...',
+    'WWVWVWVWVWVWVWVWVWVWVWVWWWWWW.',
+    'WPPPPPPPPPPPPPPPPPPPPPPPPPPPWW',
+    '.GWWWWWWWWWWWWWWWWWWWWWWWWWWW.',
+    '..GGGGGGGGGGWWWWWWWWWWWWGGGG..',
+    '..............GGGGGGGGG.......',
+    '...............DDGGGGG........',
+    '................DD............'
+  ];
+
+  var LABELS = ['PRIMER FELIZA JUNTAS', 'ESA CONVERSACIÓN', 'SU PERFUME', 'NUESTRA PLAYLIST', 'NOSOTRAS', 'SUS PADRES HOMOFOBICOS', 'EL PRIMER BESO', 'SU PELO VERDE'];
+  var SUITCASES = [
+    { main: '#ff4fa3', light: '#ff9bd0', dark: '#c2185b' },
+    { main: '#8b5cf6', light: '#c4b5fd', dark: '#5b21b6' },
+    { main: '#2dd4bf', light: '#99f6e4', dark: '#0f766e' },
+    { main: '#fb923c', light: '#fed7aa', dark: '#c2410c' },
+    { main: '#f472b6', light: '#fbcfe8', dark: '#9d174d' }
+  ];
+  var STATIONS = ['PLAZA DE MAYO', 'CONGRESO', 'CARLOS GARDEL', 'CALLAO', 'ONCE', 'PLAZA ITALIA', 'PRIMERA JUNTA', 'CATEDRAL', 'RETIRO', 'CONSTITUCIÓN', 'PUEYRREDÓN'];
+
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var low = document.createElement('canvas');
+  low.width = LW; low.height = LH;
+  var g = low.getContext('2d');
+
+  var startOv = document.getElementById('startOv');
+  var pauseOv = document.getElementById('pauseOv');
+  var overOv = document.getElementById('overOv');
+  var overMsg = document.getElementById('overMsg');
+  var winOv = document.getElementById('winOv');
+  var winMsg = document.getElementById('winMsg');
+  var btnAgain = document.getElementById('btnAgain');
+  var progBar = document.getElementById('progBar');
+  var planeEl = document.getElementById('plane');
+  var btnPlay = document.getElementById('btnPlay');
+  var btnResume = document.getElementById('btnResume');
+  var btnRetry = document.getElementById('btnRetry');
+  var btnPause = document.getElementById('btnPause');
+  var heartsEl = document.getElementById('hearts');
+  var distEl = document.getElementById('dist');
+  var memEl = document.getElementById('mem');
+
+  var PAL = { H: '#8f2f0c', R: '#d9480f', L: '#fb7f3d', S: '#f7cfa8', s: '#e0a57e', E: '#2b0a1a', M: '#d6336c',
+              P: '#ff4fa3', Q: '#c2185b', B: '#4c1d95', G: '#fff0f7', W: '#ffffff' };
+  var UP = [
+    '....HRRRRRRH....',
+    '..HRRLLRRLLRRH..',
+    '.HRLLRRRRRRLLRH.',
+    'HRRLRRRRRRRRLRRH',
+    'HRLRRRLRRRRRRLRH',
+    'HRRRRLRRRSSRRRH.',
+    'HRLRRRRRSSSSRRH.',
+    '.HRRRLRRSESSSRH.',
+    '.HRLRRRRSSSSMH..',
+    '.HRRRRRRRSSsH...',
+    '..HRRLRRRRsH....',
+    '..HRRRRRPPPP....',
+    '..HRLRRSPPPPS...',
+    '...HRRRSPPPPS...',
+    '...HRLR.PPPP....',
+    '....HRH.QPPQ....',
+    '....HR..QPPQ....'
+  ];
+  var LEGS = {
+    run1: ['........S..S....', '.......SS...S...', '.......GG...GG..', '......BBB...BBB.', '......BB.....BB.'],
+    run2: ['........S.S.....', '........S.S.....', '........G.G.....', '.......BBBBB....', '................'],
+    jump: ['........SSS.....', '.......SS..SS...', '......GG....GG..', '.....BBB....BBB.', '................']
+  };
+  var HIT_UP = UP.slice();
+  HIT_UP[7] = '.HRRRLRRSEESSRH.';
+  HIT_UP[8] = '.HRLRRRRSSSEEH..';
+  HIT_UP[11] = '..HRRRRSPPPPPS..';
+  HIT_UP[12] = '..HRLRSSPPPPSS..';
+
+  function buildSprite(rows, tint) {
+    var cv = document.createElement('canvas');
+    cv.width = 18; cv.height = 26;
+    var x = cv.getContext('2d');
+    var filled = [];
+    var y, c, ch;
+    for (y = 0; y < 26; y++) { filled.push(new Array(18).fill(false)); }
+    for (y = 0; y < rows.length; y++) {
+      for (c = 0; c < 16; c++) {
+        ch = rows[y].charAt(c);
+        if (PAL[ch]) { filled[y + 1][c + 1] = PAL[ch]; }
+      }
+    }
+    x.fillStyle = '#1a0620';
+    for (y = 0; y < 26; y++) {
+      for (c = 0; c < 18; c++) {
+        if (filled[y][c]) continue;
+        if ((y > 0 && filled[y - 1][c]) || (y < 25 && filled[y + 1][c]) || (c > 0 && filled[y][c - 1]) || (c < 17 && filled[y][c + 1])) {
+          x.fillRect(c, y, 1, 1);
+        }
+      }
+    }
+    for (y = 0; y < 26; y++) {
+      for (c = 0; c < 18; c++) {
+        if (filled[y][c]) { x.fillStyle = filled[y][c]; x.fillRect(c, y, 1, 1); }
+      }
+    }
+    if (tint) {
+      x.globalCompositeOperation = 'source-atop';
+      x.fillStyle = tint;
+      x.fillRect(0, 0, 18, 26);
+    }
+    return cv;
+  }
+  var SPR = {
+    run1: buildSprite(UP.concat(LEGS.run1)),
+    run2: buildSprite(UP.concat(LEGS.run2)),
+    jump: buildSprite(UP.concat(LEGS.jump)),
+    hit: buildSprite(HIT_UP.concat(LEGS.jump), 'rgba(255,45,85,0.38)')
+  };
+
+  var state = 'idle';
+  var scroll = 0, speed = 60, meters = 0, memories = 0, lives = LIVES;
+  var player = { y: FLOOR, vy: 0, ground: true, t: 0, invul: 0, hitT: 0, holding: false, buffer: 0 };
+  var obstacles = [], spawnIn = 120, lastLabel = -1;
+  var dust = [], specks = [], sparks = [];
+  var finishT = 0, shake = 0, flash = 0, overTimer = 0, lastHit = '', best = 0, dustT = 0;
+  var tNow = 0;
+
+  try { best = parseInt(localStorage.getItem('subwayBest') || '0', 10) || 0; } catch (e) { best = 0; }
+
+  for (var i = 0; i < 18; i++) {
+    specks.push({ x: Math.random() * LW, y: 12 + Math.random() * 70, v: 6 + Math.random() * 12, p: Math.random() * 6.28, c: i % 3 });
+  }
+
+  function heartSvg(full) {
+    var map = ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'];
+    var col = full ? '#ff2d95' : '#3b1a78';
+    var out = '<svg viewBox="0 0 7 6" xmlns="http://www.w3.org/2000/svg">';
+    for (var y = 0; y < map.length; y++) {
+      for (var x = 0; x < 7; x++) {
+        if (map[y].charAt(x) === 'X') {
+          var shine = full && x === 1 && y === 1;
+          out += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + (shine ? '#ffd1ec' : col) + '"/>';
+        }
+      }
+    }
+    return out + '</svg>';
+  }
+  function buildPlane() {
+    var pal = { W: '#fff0f7', G: '#c4b5fd', P: '#ff4fa3', V: '#8b5cf6', D: '#5b21b6' };
+    var W2 = 32, H2 = 15, ox = 1, oy = 1, grid = [], y, x;
+    for (y = 0; y < H2; y++) grid.push(new Array(W2).fill(null));
+    for (y = 0; y < PLANE.length; y++) for (x = 0; x < PLANE[y].length; x++) if (pal[PLANE[y].charAt(x)]) grid[y + oy][x + ox] = pal[PLANE[y].charAt(x)];
+    var out = '<svg viewBox="0 0 ' + W2 + ' ' + H2 + '" xmlns="http://www.w3.org/2000/svg">', ol = '', fl = '';
+    for (y = 0; y < H2; y++) {
+      for (x = 0; x < W2; x++) {
+        if (grid[y][x]) { fl += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + grid[y][x] + '"/>'; continue; }
+        if ((y > 0 && grid[y - 1][x]) || (y < H2 - 1 && grid[y + 1][x]) || (x > 0 && grid[y][x - 1]) || (x < W2 - 1 && grid[y][x + 1])) ol += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="#1a0620"/>';
+      }
+    }
+    planeEl.innerHTML = out + ol + fl + '</svg>';
+  }
+  buildPlane();
+
+  function updateHud() {
+    var h = '';
+    for (var i = 0; i < LIVES; i++) h += heartSvg(i < lives);
+    heartsEl.innerHTML = h;
+    distEl.textContent = Math.floor(meters);
+    memEl.textContent = memories;
+    progBar.style.width = Math.min(100, meters / GOAL * 100).toFixed(1) + '%';
+  }
+
+  function currentSpeed() {
+    return 80 + 92 * (1 - Math.exp(-meters / 650));
+  }
+
+  function resetGame() {
+    scroll = 0; meters = 0; memories = 0; lives = LIVES; speed = 80;
+    player.y = FLOOR; player.vy = 0; player.ground = true; player.invul = 0; player.hitT = 0; player.holding = false; player.buffer = 0;
+    obstacles = []; dust = []; sparks = []; spawnIn = 150; lastLabel = -1; lastHit = '';
+    shake = 0; flash = 0; overTimer = 0; finishT = 0;
+    updateHud();
+  }
+
+  function startGame() {
+    resetGame();
+    startOv.classList.add('hidden'); overOv.classList.add('hidden'); pauseOv.classList.add('hidden'); winOv.classList.add('hidden');
+    state = 'playing';
+    btnPause.disabled = false;
+    btnPause.textContent = 'PAUSA';
+  }
+
+  function pauseGame() {
+    if (state !== 'playing') return;
+    state = 'paused';
+    pauseOv.classList.remove('hidden');
+    btnPause.textContent = 'SEGUIR';
+  }
+  function resumeGame() {
+    if (state !== 'paused') return;
+    state = 'playing';
+    pauseOv.classList.add('hidden');
+    btnPause.textContent = 'PAUSA';
+  }
+  function togglePause() { if (state === 'playing') pauseGame(); else if (state === 'paused') resumeGame(); }
+
+  function jump() {
+    if (state !== 'playing') return;
+    if (player.ground) {
+      player.vy = -JUMP_V; player.ground = false; player.holding = true; player.buffer = 0;
+      for (var i = 0; i < 5; i++) dust.push({ x: P_X + 8 + Math.random() * 4, y: FLOOR - 1, vx: -20 - Math.random() * 30, vy: -10 - Math.random() * 14, life: 0.35, t: 0 });
+    } else {
+      player.buffer = 0.12;
+    }
+  }
+  function release() { player.holding = false; }
+
+  function pickLabel() {
+    var n;
+    do { n = Math.floor(Math.random() * LABELS.length); } while (n === lastLabel);
+    lastLabel = n;
+    return LABELS[n];
+  }
+
+  function spawn() {
+    var m = meters;
+    var r = Math.random();
+    var stackP = Math.min(0.3, Math.max(0, (m - 120) / 1800));
+    var pairP = Math.min(0.28, Math.max(0, (m - 180) / 1400));
+    var kind, w, h;
+    if (r < stackP) { kind = 'stack'; w = 20; h = 28; }
+    else if (r < stackP + pairP) { kind = 'pair'; w = 38; h = 16; }
+    else if (Math.random() < 0.5) { kind = 'small'; w = 16; h = 12; }
+    else { kind = 'big'; w = 20; h = 16; }
+    obstacles.push({
+      x: LW + 24, w: w, h: h, kind: kind, col: SUITCASES[Math.floor(Math.random() * SUITCASES.length)],
+      col2: SUITCASES[Math.floor(Math.random() * SUITCASES.length)],
+      label: pickLabel(), hit: false, passed: false, kx: 0, ky: 0, kr: 0
+    });
+    var air = 0.7 * speed;
+    var extra = kind === 'stack' ? 40 : kind === 'pair' ? 24 : 0;
+    var rnd = 40 + Math.random() * Math.max(30, 110 - m * 0.06);
+    spawnIn = w + air + extra + rnd;
+  }
+
+  function loseLife(o) {
+    lives--;
+    o.hit = true; o.kx = 70 + Math.random() * 30; o.ky = -150; o.kr = 0;
+    player.invul = 1.5; player.hitT = 0.55;
+    shake = 0.3; flash = 0.35;
+    lastHit = o.label;
+    for (var i = 0; i < 14; i++) {
+      var a = Math.random() * 6.283, v = 40 + Math.random() * 90;
+      sparks.push({ x: P_X + 8, y: player.y - 12, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, life: 0.6, t: 0, c: i % 2 ? '#ff7ac6' : '#ffd1ec' });
+    }
+    updateHud();
+    if (lives <= 0) { state = 'dying'; overTimer = 1.0; btnPause.disabled = true; }
+  }
+
+  function endGame() {
+    state = 'over';
+    var m = Math.floor(meters);
+    var newBest = m > best;
+    if (newBest) { best = m; try { localStorage.setItem('subwayBest', String(best)); } catch (e) {} }
+    overMsg.innerHTML = '<strong>' + m + ' m</strong> · <strong>' + memories + ' recuerdos</strong><br>Te frenó: «' + lastHit + '»<br>' +
+      'Te faltaron <strong>' + Math.max(0, GOAL - m) + ' m</strong> para la meta' + (newBest && m > 0 ? ' · ¡Nuevo récord!' : '');
+    overOv.classList.remove('hidden');
+  }
+
+  function winGame() {
+    state = 'won';
+    var m = Math.floor(meters);
+    if (m > best) { best = m; try { localStorage.setItem('subwayBest', String(best)); } catch (e) {} }
+    winMsg.innerHTML = '<strong>' + GOAL + ' m</strong> · <strong>' + memories + ' recuerdos</strong> esquivados';
+    winOv.classList.remove('hidden');
+  }
+
+  function update(dt) {
+    var playing = state === 'playing' || state === 'dying' || state === 'finishing';
+    var target = state === 'finishing' ? 70 : (playing ? currentSpeed() : 60);
+    speed += (target - speed) * Math.min(1, dt * 3);
+    var dx = speed * dt;
+    scroll += dx;
+    if (playing && state !== 'finishing') meters += dx / 8;
+    if (state === 'playing' && meters >= GOAL) {
+      meters = GOAL; state = 'finishing'; finishT = 2.2; btnPause.disabled = true; player.invul = 9;
+      for (var q = 0; q < 40; q++) {
+        var qa = Math.random() * 6.283, qv = 30 + Math.random() * 110;
+        sparks.push({ x: P_X + 8, y: player.y - 12, vx: Math.cos(qa) * qv, vy: Math.sin(qa) * qv - 70, life: 1.1, t: 0, c: ['#ff7ac6', '#ffd1ec', '#a78bfa', '#ffd166'][q % 4] });
+      }
+    }
+
+    player.t += dt;
+    if (playing) {
+      if (!player.ground) {
+        var g2 = player.holding || player.vy > 0 ? GRAV : GRAV * 1.9;
+        player.vy += g2 * dt;
+        player.y += player.vy * dt;
+        if (player.y >= FLOOR) {
+          player.y = FLOOR; player.vy = 0; player.ground = true;
+          for (var k = 0; k < 4; k++) dust.push({ x: P_X + 8 + Math.random() * 4, y: FLOOR - 1, vx: -30 - Math.random() * 40, vy: -8 - Math.random() * 10, life: 0.3, t: 0 });
+          if (player.buffer > 0) { player.buffer = 0; jump(); }
+        }
+      }
+      if (player.buffer > 0) player.buffer -= dt;
+      if (player.invul > 0) player.invul -= dt;
+      if (player.hitT > 0) player.hitT -= dt;
+
+      if (player.ground) {
+        dustT -= dt;
+        if (dustT <= 0) {
+          dustT = 0.1;
+          dust.push({ x: P_X + 4, y: FLOOR - 1, vx: -25 - Math.random() * 20, vy: -6 - Math.random() * 6, life: 0.3, t: 0 });
+        }
+      }
+
+      if (state === 'playing' && meters < GOAL - 35) {
+        spawnIn -= dx;
+        if (spawnIn <= 0) spawn();
+      }
+
+      var hx0 = P_X + 4, hx1 = P_X + 13, hy0 = player.y - 19, hy1 = player.y - 1;
+      for (var i = obstacles.length - 1; i >= 0; i--) {
+        var o = obstacles[i];
+        if (o.hit) {
+          o.x += o.kx * dt - dx; o.ky += 520 * dt; o.kr += dt;
+          if (o.kr > 1.2 || o.x < -60) obstacles.splice(i, 1);
+          continue;
+        }
+        o.x -= dx;
+        if (o.x + o.w < -8) { obstacles.splice(i, 1); continue; }
+        if (!o.passed && o.x + o.w < P_X + 2) { o.passed = true; memories++; updateHud(); }
+        if (state === 'playing' && player.invul <= 0) {
+          var oy0 = FLOOR - o.h;
+          if (hx1 > o.x + 1 && hx0 < o.x + o.w - 1 && hy1 > oy0 + 1 && hy0 < FLOOR) { loseLife(o); }
+        }
+      }
+      distEl.textContent = Math.floor(meters);
+      progBar.style.width = Math.min(100, meters / GOAL * 100).toFixed(1) + '%';
+    }
+
+    if (state === 'finishing') {
+      finishT -= dt;
+      if (finishT <= 0) winGame();
+    }
+
+    if (state === 'dying') {
+      overTimer -= dt;
+      if (overTimer <= 0) endGame();
+    }
+
+    var j;
+    for (j = dust.length - 1; j >= 0; j--) {
+      var d = dust[j]; d.t += dt; d.x += d.vx * dt; d.y += d.vy * dt;
+      if (d.t > d.life) dust.splice(j, 1);
+    }
+    for (j = sparks.length - 1; j >= 0; j--) {
+      var s = sparks[j]; s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 220 * dt;
+      if (s.t > s.life) sparks.splice(j, 1);
+    }
+    for (j = 0; j < specks.length; j++) {
+      var p = specks[j];
+      p.x -= (p.v + speed * 0.15) * dt;
+      p.y += Math.sin(tNow * 1.5 + p.p) * 6 * dt - 2 * dt;
+      if (p.x < -4) { p.x = LW + 4; p.y = 12 + Math.random() * 70; }
+      if (p.y < 8) p.y = 84;
+    }
+    if (shake > 0) shake -= dt;
+    if (flash > 0) flash -= dt;
+  }
+
+  function rect(x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); }
+
+  function drawBackground() {
+    var bands = ['#12061f', '#160828', '#1a0a30', '#1f0d3a', '#241046', '#2a1253', '#301560'];
+    var bh = Math.ceil(FLOOR / bands.length), i, x;
+    for (i = 0; i < bands.length; i++) rect(0, i * bh, LW, bh + 1, bands[i]);
+
+    var off = -((scroll * 0.25) % 16);
+    g.fillStyle = 'rgba(255,255,255,0.045)';
+    for (var row = 0; row < 7; row++) {
+      var y = 10 + row * 8;
+      g.fillRect(0, y, LW, 1);
+      var shift = (row % 2) * 8;
+      for (x = off - 16 + shift; x < LW; x += 16) g.fillRect(Math.round(x), y, 1, 8);
+    }
+
+    rect(0, 0, LW, 6, '#0b0418');
+    rect(0, 6, LW, 2, '#ff4fa3');
+    rect(0, 8, LW, 1, 'rgba(255,79,163,0.35)');
+    var lightOff = -((scroll * 0.5) % 64);
+    for (x = lightOff - 64; x < LW + 64; x += 64) {
+      var lx = Math.round(x);
+      rect(lx + 18, 9, 28, 3, '#ffe6f5');
+      g.fillStyle = 'rgba(255,200,235,0.07)';
+      g.beginPath(); g.moveTo(lx + 18, 12); g.lineTo(lx + 46, 12); g.lineTo(lx + 64, 58); g.lineTo(lx, 58); g.closePath(); g.fill();
+    }
+
+    var signGap = 200, signOff = -((scroll * 0.45) % signGap), idx = Math.floor((scroll * 0.45) / signGap);
+    g.font = '8px "Press Start 2P", monospace'; g.textBaseline = 'top'; g.textAlign = 'left';
+    for (x = signOff, i = 0; x < LW + signGap; x += signGap, i++) {
+      var name = STATIONS[(idx + i) % STATIONS.length];
+      var sw = name.length * 8 + 10, sx = Math.round(x + 16);
+      rect(sx - 2, 14, sw + 4, 16, '#0b0418');
+      rect(sx - 1, 15, sw + 2, 14, '#ff4fa3');
+      rect(sx, 16, sw, 12, '#2a0f4a');
+      g.fillStyle = (Math.floor(tNow * 2) + i) % 9 === 0 ? '#ffb3dd' : '#ffd1ec';
+      g.fillText(name, sx + 5, 18);
+      rect(sx + 6, 30, 2, 5, '#5b21b6'); rect(sx + sw - 8, 30, 2, 5, '#5b21b6');
+    }
+
+    var posterOff = -((scroll * 0.45) % signGap) + 150;
+    for (x = posterOff; x < LW + signGap; x += signGap) {
+      var px = Math.round(x);
+      rect(px - 1, 15, 22, 30, '#0b0418');
+      rect(px, 16, 20, 28, '#8b5cf6');
+      rect(px + 2, 18, 16, 24, '#ff9bd0');
+      rect(px + 6, 23, 3, 2, '#ff2d95'); rect(px + 11, 23, 3, 2, '#ff2d95'); rect(px + 5, 25, 10, 3, '#ff2d95'); rect(px + 7, 28, 6, 2, '#ff2d95'); rect(px + 9, 30, 2, 1, '#ff2d95');
+      rect(px + 4, 35, 12, 1, '#5b21b6'); rect(px + 4, 38, 8, 1, '#5b21b6');
+    }
+
+    var carLen = 100, trainOff = -((scroll * 0.8) % carLen);
+    var carIdx = Math.floor((scroll * 0.8) / carLen);
+    for (x = trainOff - carLen, i = 0; x < LW + carLen; x += carLen, i++) {
+      var cx = Math.round(x);
+      rect(cx, 42, carLen - 3, 44, '#2e1469');
+      rect(cx, 42, carLen - 3, 3, '#4c1d95');
+      rect(cx, 46, carLen - 3, 2, '#ff4fa3');
+      rect(cx, 79, carLen - 3, 7, '#1a0a3a');
+      rect(cx, 76, carLen - 3, 2, '#ff2d95');
+      for (var w = 0; w < 6; w++) {
+        var wx = cx + 6 + w * 15;
+        var lit = ((carIdx + i + w) % 3 === 0) ? '#a78bfa' : ((carIdx + i + w) % 4 === 1 ? '#ff7ac6' : '#ffb3dd');
+        rect(wx, 51, 11, 14, '#0b0418');
+        rect(wx + 1, 52, 9, 12, lit);
+        rect(wx + 1, 52, 9, 3, 'rgba(255,255,255,0.35)');
+        if ((carIdx + i + w) % 2 === 0) { rect(wx + 4, 59, 3, 5, 'rgba(60,10,90,0.6)'); rect(wx + 4, 57, 3, 3, 'rgba(60,10,90,0.6)'); }
+      }
+    }
+    rect(0, 86, LW, 6, '#12061f');
+
+    rect(0, FLOOR, LW, LH - FLOOR, '#1b0b33');
+    rect(0, FLOOR, LW, 2, '#ffd1ec');
+    rect(0, FLOOR + 2, LW, 1, '#ff4fa3');
+    var fo = -(scroll % 16);
+    for (var ry = 0; ry < 3; ry++) {
+      for (x = fo - 16; x < LW; x += 8) {
+        var chk = (Math.floor((x - fo) / 8) + ry) % 2 === 0;
+        rect(x, FLOOR + 4 + ry * 7, 8, 7, chk ? '#241044' : '#2d1458');
+      }
+    }
+    rect(0, FLOOR + 3, LW, 1, 'rgba(255,79,163,0.5)');
+    g.fillStyle = 'rgba(255,79,163,0.10)';
+    g.fillRect(0, FLOOR + 3, LW, 8);
+  }
+
+  function drawSuitcase(x, y, w, h, c, handle) {
+    var X = Math.round(x), Y = Math.round(y);
+    rect(X - 1, Y - 1, w + 2, h + 2, '#12041c');
+    rect(X, Y, w, h, c.main);
+    rect(X + 1, Y + 1, w - 2, 2, c.light);
+    rect(X, Y + h - 3, w, 3, c.dark);
+    rect(X + 3, Y, 2, h, c.dark);
+    rect(X + w - 5, Y, 2, h, c.dark);
+    if (h >= 14) rect(X + Math.floor(w / 2) - 2, Y + 5, 4, 3, '#ffd166');
+    if (w >= 20 && h >= 14) { rect(X + 7, Y + 9, 2, 1, '#fff0f7'); rect(X + 10, Y + 9, 2, 1, '#fff0f7'); rect(X + 8, Y + 10, 3, 1, '#fff0f7'); }
+    if (handle) {
+      var hx = X + Math.floor(w / 2) - 5;
+      rect(hx - 1, Y - 5, 12, 5, '#12041c');
+      rect(hx, Y - 4, 10, 3, '#c7a8e8');
+      rect(hx + 2, Y - 3, 6, 2, '#12041c');
+    }
+  }
+
+  function drawObstacle(o) {
+    var y = FLOOR - o.h, x = o.x, yy = y;
+    if (o.hit) { yy = y + o.ky * o.kr + 260 * o.kr * o.kr; if (Math.floor(o.kr * 14) % 2 === 1) return; }
+    if (o.kind === 'small') drawSuitcase(x, yy, 16, 12, o.col, true);
+    else if (o.kind === 'big') drawSuitcase(x, yy, 20, 16, o.col, true);
+    else if (o.kind === 'pair') {
+      drawSuitcase(x, yy, 20, 16, o.col, true);
+      drawSuitcase(x + 22, yy + 4, 16, 12, o.col2, true);
+    } else {
+      drawSuitcase(x, yy + 12, 20, 16, o.col, false);
+      drawSuitcase(x + 2, yy, 16, 12, o.col2, true);
+    }
+    g.fillStyle = 'rgba(0,0,0,0.35)';
+    if (!o.hit) g.fillRect(Math.round(x) - 1, FLOOR, o.w + 2, 2);
+  }
+
+  function drawPlayer() {
+    if (player.invul > 0 && Math.floor(player.invul * 14) % 2 === 0 && state !== 'dying') return;
+    var f, bob = 0;
+    if (player.hitT > 0 || state === 'dying') { f = SPR.hit; }
+    else if (!player.ground) { f = SPR.jump; }
+    else {
+      var step = Math.floor(player.t * (speed / 9)) % 2;
+      f = step === 0 ? SPR.run1 : SPR.run2;
+      if (step === 1) bob = -1;
+    }
+    g.fillStyle = 'rgba(0,0,0,0.4)';
+    var sh = Math.max(4, 11 - Math.floor((FLOOR - player.y) / 6));
+    g.fillRect(P_X + 8 - Math.floor(sh / 2), FLOOR, sh, 2);
+    g.drawImage(f, P_X - 1, Math.round(player.y) - 23 + bob);
+  }
+
+  function drawParticles() {
+    var i, p;
+    for (i = 0; i < specks.length; i++) {
+      p = specks[i];
+      g.fillStyle = p.c === 0 ? 'rgba(255,122,198,0.8)' : (p.c === 1 ? 'rgba(167,139,250,0.8)' : 'rgba(255,240,247,0.7)');
+      var px = Math.round(p.x), py = Math.round(p.y);
+      if (p.c === 0) { g.fillRect(px, py, 2, 1); g.fillRect(px + 3, py, 2, 1); g.fillRect(px, py + 1, 5, 1); g.fillRect(px + 1, py + 2, 3, 1); g.fillRect(px + 2, py + 3, 1, 1); }
+      else g.fillRect(px, py, 2, 2);
+    }
+    for (i = 0; i < dust.length; i++) {
+      p = dust[i];
+      g.fillStyle = 'rgba(255,209,236,' + (0.6 * (1 - p.t / p.life)).toFixed(2) + ')';
+      g.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+    }
+    for (i = 0; i < sparks.length; i++) {
+      p = sparks[i];
+      g.fillStyle = p.c;
+      g.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+    }
+  }
+
+  function drawLabel(o) {
+    if (o.hit) return;
+    var ox = o.x * SC, oy = (FLOOR - o.h - (o.kind === 'stack' ? 8 : 6)) * SC;
+    if (o.x > LW - 4 || o.x + o.w < 0) return;
+    ctx.font = '34px VT323, monospace';
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    var tw = ctx.measureText(o.label).width;
+    var bw = tw + 24, bh = 34;
+    var cx = ox + (o.w * SC) / 2;
+    var bx = Math.max(6, Math.min(canvas.width - bw - 6, cx - bw / 2));
+    var by = oy - bh - 6;
+    var a = Math.max(0, Math.min(1, (LW - o.x) / 40));
+    ctx.globalAlpha = a;
+    ctx.fillStyle = '#0b0418';
+    ctx.fillRect(bx - 3, by - 3, bw + 6, bh + 6);
+    ctx.fillStyle = '#ff4fa3';
+    ctx.fillRect(bx - 1, by - 1, bw + 2, bh + 2);
+    ctx.fillStyle = '#1a0a30';
+    ctx.fillRect(bx + 2, by + 2, bw - 4, bh - 4);
+    ctx.fillStyle = '#ffd1ec';
+    ctx.fillText(o.label, bx + bw / 2, by + bh / 2 + 1);
+    ctx.fillStyle = '#ff4fa3';
+    var tx = Math.max(bx + 8, Math.min(bx + bw - 14, cx - 3));
+    ctx.fillRect(tx, by + bh + 1, 6, 3);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFinish() {
+    var fx = Math.round(P_X + 8 + (GOAL - meters) * 8);
+    if (fx > LW + 50 || fx < -60) return;
+    var i, j;
+    rect(fx - 22, FLOOR - 70, 3, 70, '#ffd1ec'); rect(fx + 22, FLOOR - 70, 3, 70, '#ffd1ec');
+    rect(fx - 24, FLOOR - 72, 51, 3, '#ff4fa3');
+    for (j = 0; j < 3; j++) for (i = 0; i < 12; i++) rect(fx - 22 + i * 4 + (i === 11 ? 1 : 0), FLOOR - 69 + j * 4, i === 11 ? 3 : 4, 4, (i + j) % 2 === 0 ? '#fff0f7' : '#1a0620');
+    rect(fx - 22, FLOOR - 57, 47, 10, '#0b0418'); rect(fx - 21, FLOOR - 56, 45, 8, '#ff2d95');
+    g.font = '8px "Press Start 2P", monospace'; g.textBaseline = 'top'; g.textAlign = 'center';
+    g.fillStyle = '#fff0f7'; g.fillText('META', fx + 2, FLOOR - 55);
+    g.textAlign = 'left';
+    for (i = 0; i < 6; i++) rect(fx - 12 + i * 4, FLOOR + 1, 4, 3, i % 2 === 0 ? '#fff0f7' : '#1a0620');
+    g.fillStyle = 'rgba(255,79,163,0.12)';
+    g.fillRect(fx - 22, FLOOR - 70, 47, 70);
+  }
+
+  function render() {
+    drawBackground();
+    drawFinish();
+    for (var i = 0; i < obstacles.length; i++) drawObstacle(obstacles[i]);
+    drawPlayer();
+    drawParticles();
+
+    var sx = 0, sy = 0;
+    if (shake > 0) { sx = Math.round((Math.random() - 0.5) * 6); sy = Math.round((Math.random() - 0.5) * 4); }
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#0b0418';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(low, sx, sy, LW * SC, LH * SC);
+
+    var vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.height * 0.35, canvas.width / 2, canvas.height / 2, canvas.width * 0.62);
+    vg.addColorStop(0, 'rgba(11,4,24,0)'); vg.addColorStop(1, 'rgba(11,4,24,0.55)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(0,0,0,0.10)';
+    for (var yy = 0; yy < canvas.height; yy += 6) ctx.fillRect(0, yy, canvas.width, 2);
+
+    if (state === 'playing' || state === 'dying' || state === 'paused' || state === 'finishing') {
+      for (var k = 0; k < obstacles.length; k++) drawLabel(obstacles[k]);
+    }
+    if (flash > 0) { ctx.fillStyle = 'rgba(255,60,120,' + Math.min(0.45, flash * 1.4).toFixed(2) + ')'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  }
+
+  var last = 0;
+  function frame(ts) {
+    var dt = Math.min(0.05, (ts - last) / 1000 || 0);
+    last = ts;
+    if (state !== 'paused') { tNow += dt; update(dt); }
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('pointerdown', function (e) { e.preventDefault(); jump(); });
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointerleave', release);
+  canvas.addEventListener('pointercancel', release);
+  window.addEventListener('keydown', function (e) {
+    var k = e.code;
+    if (k === 'Space' || k === 'ArrowUp' || k === 'KeyW') {
+      if (state === 'playing') { e.preventDefault(); if (!e.repeat) jump(); }
+    } else if (k === 'KeyP' || k === 'Escape') {
+      togglePause();
+    }
+  });
+  window.addEventListener('keyup', function (e) {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') release();
+  });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) pauseGame(); });
+  window.addEventListener('blur', pauseGame);
+
+  btnPlay.addEventListener('click', startGame);
+  btnRetry.addEventListener('click', startGame);
+  btnResume.addEventListener('click', resumeGame);
+  btnAgain.addEventListener('click', startGame);
+  btnPause.addEventListener('click', togglePause);
+
+  updateHud();
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load('8px "Press Start 2P"');
+    document.fonts.load('34px VT323');
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
