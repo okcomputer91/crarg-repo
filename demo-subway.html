@@ -42,6 +42,8 @@
   }
   .snd:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #0b0418; }
   .snd.off { opacity: .55; border-color: #5b21b6; }
+  .snd { padding: .3rem .45rem; }
+  .snd svg { width: 26px; height: 20px; display: block; shape-rendering: crispEdges; }
   .stage {
     position: relative; overflow: hidden; border: 4px solid #ff4fa3; background: #0b0418;
     box-shadow: 0 0 0 4px #0b0418, 0 0 36px rgba(255,45,149,.5), 0 0 70px rgba(139,92,246,.35);
@@ -49,6 +51,13 @@
   canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .prog { height: 8px; margin: -.2rem 0 .6rem; border: 2px solid #5b21b6; background: #14072a; }
   .prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #8b5cf6, #ff4fa3); box-shadow: 0 0 8px #ff4fa3; }
+  .saldo { display: flex; align-items: center; gap: .5rem; margin: 0 0 .6rem; }
+  .saldo svg { width: 34px; height: 20px; display: block; shape-rendering: crispEdges; }
+  .saldobar { flex: 1; height: 10px; border: 2px solid #5b21b6; background: #14072a; }
+  .saldobar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #0ea5e9, #7dd3fc); box-shadow: 0 0 8px #7dd3fc; }
+  .saldobar i.low { background: #ff3b6b; box-shadow: 0 0 8px #ff3b6b; animation: sldb .4s steps(2) infinite; }
+  @keyframes sldb { 50% { opacity: .35; } }
+
   .plane { width: 120px; height: 56px; animation: fly 2.4s ease-in-out infinite alternate; }
   .plane svg { width: 100%; height: 100%; display: block; shape-rendering: crispEdges; }
   @keyframes fly { from { transform: translate(-26px, 4px) rotate(-3deg); } to { transform: translate(26px, -6px) rotate(-8deg); } }
@@ -76,10 +85,13 @@
     .hearts svg { width: 20px; height: 17px; }
     .hearts svg.card { width: 30px; height: 18px; }
     .stat { font-size: .5rem; }
-    .snd { font-size: .42rem; padding: .4rem .35rem; }
+    .snd { padding: .3rem .35rem; }
+    .snd svg { width: 22px; height: 17px; }
     .plane { width: 84px; height: 40px; }
     .overlay { gap: .4rem; }
-    .overlay p { font-size: 1.12rem; }
+    .overlay p { font-size: 1rem; line-height: 1; }
+    .overlay h2 { font-size: .8rem; }
+    .overlay { padding: .4rem; gap: .3rem; }
     .btn { font-size: .68rem; padding: .65rem 1rem; }
   }
   .keys { margin-top: .8rem; font-size: 1.15rem; color: rgba(255,240,247,.6); line-height: 1.1; }
@@ -96,17 +108,18 @@
     <div class="hearts" id="hearts"></div>
     <div class="stat">DIST <b id="dist">0</b>/2000 m</div>
     <div class="stat">RECUERDOS <b id="mem">0</b></div>
-    <button class="snd" id="btnSound">MÚSICA</button>
+    <button class="snd" id="btnSound"></button>
   </div>
 
   <div class="prog"><i id="progBar"></i></div>
+  <div class="saldo"><span id="saldoIc"></span><div class="saldobar"><i id="saldoFill"></i></div><div class="stat">SALDO <b id="saldoTxt">50</b> m</div></div>
 
   <div class="stage">
     <canvas id="c" width="832" height="468"></canvas>
 
     <div class="overlay" id="startOv">
-      <h2>PRÓXIMA ESTACIÓN:<br>FELIZA</h2>
-      <p>Saltá las valijas, agachate bajo los carteles y llegá a la meta: <strong>2000 m</strong>. Tenés <strong>3 vidas</strong>.</p>
+      <h2>PRÓXIMA ESTACIÓN:<br>CHAPPELLWEEN</h2>
+      <p>Saltá las valijas, agachate bajo los carteles y agarrá las <strong>SUBE</strong> para no quedarte sin saldo. Meta: <strong>2000 m</strong> - <strong>3 vidas</strong>.</p>
       <button class="btn" id="btnPlay">JUGAR</button>
     </div>
 
@@ -125,7 +138,7 @@
   </div>
 
   <p class="keys">Saltar: tocá la parte de arriba de la pantalla, ESPACIO o ↑ (mantené para saltar más alto)<br>Agacharte: mantené apretada la parte de abajo, ↓ o S</p>
-    <p class="credit">Música: cover chiptune de «The Subway» por Bit Pop Covers. Podés apagarla con el botón MÚSICA.</p>
+    <p class="credit">Música: cover chiptune de «The Subway» por Bit Pop Covers. Podés apagarla con el ícono del parlante.</p>
 </div>
 
 <script>
@@ -138,6 +151,7 @@
   var GRAV = 900, JUMP_V = 300;
   var LIVES = 3;
   var GOAL = 2000;
+  var SALDO_START = 50, SALDO_CAP = 120, SALDO_GAIN = 50, CARD_EVERY = 50;
   var PLANE = [
     '..PP..........................',
     '..PPP.........................',
@@ -154,7 +168,7 @@
     '................DD............'
   ];
 
-  var LABELS = ['PRIMER BESO', 'ESA CONVERSACIÓN', 'SU PERFUME', 'NUESTRA PLAYLIST', 'NOSOTRAS', 'PRIMER FELIZA JUNTAS', 'SU PELO VERDE'];
+  var LABELS = ['RECITAL JUNTAS', 'ESA CONVERSACIÓN', 'SU PERFUME', 'NUESTRA PLAYLIST', 'NOSOTRAS', 'PRIMERA FELIZA JUNTAS', 'SU GATO', 'SU PELO VERDE', 'SU FLEQUILLO', 'SUS OJOS', 'SU EX'];
   var SUITCASES = [
     { main: '#ff4fa3', light: '#ff9bd0', dark: '#c2185b' },
     { main: '#8b5cf6', light: '#c4b5fd', dark: '#5b21b6' },
@@ -182,6 +196,8 @@
   var btnRetry = document.getElementById('btnRetry');
   var btnSound = document.getElementById('btnSound');
   var heartsEl = document.getElementById('hearts');
+  var saldoFill = document.getElementById('saldoFill');
+  var saldoTxt = document.getElementById('saldoTxt');
   var distEl = document.getElementById('dist');
   var memEl = document.getElementById('mem');
 
@@ -263,7 +279,7 @@
   var state = 'idle';
   var scroll = 0, speed = 60, meters = 0, memories = 0, lives = LIVES;
   var player = { y: FLOOR, vy: 0, ground: true, t: 0, invul: 0, hitT: 0, holding: false, buffer: 0, duck: false };
-  var duckHeld = false, shield = false, pickups = [], duckPointer = -1;
+  var duckHeld = false, saldo = SALDO_START, nextCard = 0, pickups = [], duckPointer = -1;
   var obstacles = [], spawnIn = 120, lastLabel = -1;
   var dust = [], specks = [], sparks = [];
   var finishT = 0, shake = 0, flash = 0, overTimer = 0, lastHit = '', best = 0, dustT = 0;
@@ -421,11 +437,16 @@
   function updateHud() {
     var h = '';
     for (var i = 0; i < LIVES; i++) h += heartSvg(i < lives);
-    if (shield) h += cardSvg();
     heartsEl.innerHTML = h;
     distEl.textContent = Math.floor(meters);
     memEl.textContent = memories;
     progBar.style.width = Math.min(100, meters / GOAL * 100).toFixed(1) + '%';
+    saldoUi();
+  }
+  function saldoUi() {
+    saldoFill.style.width = Math.max(0, Math.min(100, saldo / SALDO_CAP * 100)).toFixed(1) + '%';
+    saldoFill.classList.toggle('low', saldo < 20);
+    saldoTxt.textContent = Math.ceil(saldo);
   }
 
   function currentSpeed() {
@@ -437,7 +458,7 @@
     scroll = 0; meters = 0; memories = 0; lives = LIVES; speed = 80;
     player.y = FLOOR; player.vy = 0; player.ground = true; player.invul = 0; player.hitT = 0; player.holding = false; player.buffer = 0;
     obstacles = []; pickups = []; dust = []; sparks = []; spawnIn = 150; lastLabel = -1; lastHit = '';
-    shield = false; duckHeld = false; duckPointer = -1; player.duck = false;
+    saldo = SALDO_START; nextCard = CARD_EVERY - 35; pickups.push({ x: 112, y: FLOOR - 21, type: 'sube', t: 0 }); duckHeld = false; duckPointer = -1; player.duck = false;
     shake = 0; flash = 0; overTimer = 0; finishT = 0;
     updateHud();
   }
@@ -454,8 +475,16 @@
   music.loop = true; music.preload = 'auto'; music.volume = 0.55;
   var musicMuted = false;
   try { musicMuted = localStorage.getItem('subwayMute') === '1'; } catch (e) {}
+  function sndSvg(on) {
+    var o = '<svg viewBox="0 0 13 10" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="3" width="2" height="4" fill="#ffd1ec"/><rect x="2" y="2" width="1" height="6" fill="#ffd1ec"/><rect x="3" y="1" width="1" height="8" fill="#ffd1ec"/><rect x="4" y="0" width="1" height="10" fill="#ffd1ec"/>';
+    if (on) o += '<rect x="7" y="3" width="1" height="4" fill="#ff7ac6"/><rect x="9" y="1" width="1" height="8" fill="#ff7ac6"/><rect x="11" y="0" width="1" height="10" fill="#ff7ac6"/>';
+    else for (var i = 0; i < 5; i++) o += '<rect x="' + (7 + i) + '" y="' + (2 + i) + '" width="1" height="1" fill="#ff3b6b"/><rect x="' + (11 - i) + '" y="' + (2 + i) + '" width="1" height="1" fill="#ff3b6b"/>';
+    return o + '</svg>';
+  }
   function soundUi() {
-    btnSound.textContent = musicMuted ? 'SILENCIO' : 'MÚSICA';
+    btnSound.innerHTML = sndSvg(!musicMuted);
+    btnSound.setAttribute('aria-label', musicMuted ? 'Activar música' : 'Silenciar música');
+    btnSound.title = musicMuted ? 'Activar música' : 'Silenciar música';
     btnSound.classList.toggle('off', musicMuted);
   }
   function musicPlay() {
@@ -500,6 +529,7 @@
     var headP = Math.min(0.2, Math.max(0, (m - 100) / 900));
     var locaP = Math.min(0.16, Math.max(0, (m - 60) / 900));
     var kind, w, h;
+    var prev = obstacles.length ? obstacles[obstacles.length - 1] : null;
     if (r < hangP) { kind = 'hang'; w = 36; h = 16; }
     else if (Math.random() < headP) { kind = 'head'; w = 26; h = 15; }
     else if (Math.random() < locaP) { kind = 'loca'; w = 18; h = 26; }
@@ -517,23 +547,36 @@
     var extra = kind === 'stack' ? 40 : kind === 'pair' ? 24 : 0;
     var rnd = 40 + Math.random() * Math.max(30, 110 - m * 0.06);
     spawnIn = w + air + extra + rnd;
-    if (!shield && Math.random() < 0.14) {
-      pickups.push({ x: LW + 24 + w + spawnIn * 0.5, y: Math.random() < 0.6 ? FLOOR - 21 : FLOOR - 49, type: 'sube', t: Math.random() * 6 });
+    if (meters >= nextCard && meters < GOAL - 60) {
+      var nc = LW + 24 + w / 2, okAir = kind !== 'hang', okGround = false, pc = 0;
+      if (prev && !prev.hit && prev.kind !== 'hang' && kind !== 'hang') {
+        pc = prev.x + prev.w / 2;
+        okGround = nc - pc - 0.67 * speed >= 28;
+      }
+      var useAir = okAir && (!okGround || Math.random() < 0.5);
+      if (kind === 'hang') {
+        nextCard += CARD_EVERY;
+        pickups.push({ x: nc - 9, y: FLOOR - 12, type: 'sube', t: Math.random() * 6 });
+      } else if (useAir || okGround) {
+        nextCard += CARD_EVERY;
+        if (useAir) pickups.push({ x: nc - 9, y: FLOOR - 56, type: 'sube', t: Math.random() * 6 });
+        else pickups.push({ x: (nc + pc) / 2 - 9, y: FLOOR - 21, type: 'sube', t: Math.random() * 6 });
+      }
     }
   }
 
-  function loseLife(o) {
-    if (shield) {
-      shield = false;
-      o.hit = true; o.kx = 70 + Math.random() * 30; o.ky = -150; o.kr = 0;
-      player.invul = 1.0; shake = 0.15; flash = 0;
-      for (var q = 0; q < 16; q++) {
-        var qa = Math.random() * 6.283, qv = 40 + Math.random() * 80;
-        sparks.push({ x: P_X + 8, y: player.y - 12, vx: Math.cos(qa) * qv, vy: Math.sin(qa) * qv - 20, life: 0.5, t: 0, c: q % 2 ? '#7dd3fc' : '#fff0f7' });
-      }
-      updateHud();
-      return;
+  function outOfSaldo() {
+    lives = 0; lastHit = 'QUEDARTE SIN SALDO EN LA SUBE';
+    player.hitT = 0.55; shake = 0.3; flash = 0.35;
+    for (var i = 0; i < 14; i++) {
+      var a = Math.random() * 6.283, v = 40 + Math.random() * 90;
+      sparks.push({ x: P_X + 8, y: player.y - 12, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, life: 0.6, t: 0, c: i % 2 ? '#7dd3fc' : '#ffd1ec' });
     }
+    state = 'dying'; overTimer = 1.0;
+    updateHud();
+  }
+
+  function loseLife(o) {
     lives--;
     o.hit = true; o.kx = 70 + Math.random() * 30; o.ky = -150; o.kr = 0;
     player.invul = 1.5; player.hitT = 0.55;
@@ -573,6 +616,10 @@
     var dx = speed * dt;
     scroll += dx;
     if (playing && state !== 'finishing') meters += dx / 8;
+    if (state === 'playing' && meters < GOAL - 45) {
+      saldo -= dx / 8;
+      if (saldo <= 0) { saldo = 0; outOfSaldo(); }
+    }
     if (state === 'playing' && meters >= GOAL) {
       meters = GOAL; state = 'finishing'; finishT = 2.2; player.invul = 9;
       for (var q = 0; q < 40; q++) {
@@ -634,7 +681,7 @@
         var py = pk.y + Math.sin(pk.t * 4) * 1.5;
         if ((state === 'playing' || state === 'finishing') && hx1 > pk.x && hx0 < pk.x + 19 && hy1 > py && hy0 < py + 11) {
           pickups.splice(pi, 1);
-          shield = true;
+          saldo = Math.min(SALDO_CAP, saldo + SALDO_GAIN);
           for (var qi = 0; qi < 14; qi++) {
             var qa2 = Math.random() * 6.283, qv2 = 30 + Math.random() * 70;
             sparks.push({ x: pk.x + 5, y: py + 4, vx: Math.cos(qa2) * qv2, vy: Math.sin(qa2) * qv2 - 20, life: 0.5, t: 0, c: '#7dd3fc' });
@@ -644,6 +691,7 @@
       }
       distEl.textContent = Math.floor(meters);
       progBar.style.width = Math.min(100, meters / GOAL * 100).toFixed(1) + '%';
+      saldoUi();
     }
 
     if (state === 'finishing') {
@@ -823,10 +871,6 @@
     var sh = Math.max(4, 11 - Math.floor((FLOOR - player.y) / 6));
     g.fillRect(P_X + 8 - Math.floor(sh / 2), FLOOR, sh, 2);
     g.drawImage(f, P_X - 1, Math.round(player.y) - (f.rows + 1) + bob);
-    if (shield) {
-      g.strokeStyle = 'rgba(125,211,252,' + (0.55 + 0.35 * Math.sin(tNow * 8)).toFixed(2) + ')'; g.lineWidth = 1;
-      g.beginPath(); g.arc(P_X + 8, Math.round(player.y) - 11, 16, 0, 6.283); g.stroke();
-    }
   }
 
   function drawPickups() {
@@ -930,6 +974,11 @@
     if (state === 'playing' || state === 'dying' || state === 'finishing') {
       for (var k = 0; k < obstacles.length; k++) drawLabel(obstacles[k]);
     }
+    if (state === 'playing' && saldo < 20 && meters < GOAL - 45 && Math.floor(tNow * 4) % 2 === 0) {
+      ctx.font = '34px VT323, monospace'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#ff6b8a';
+      ctx.fillText('¡SALDO BAJO! AGARRÁ LA SUBE', canvas.width / 2, 56);
+    }
     if (flash > 0) { ctx.fillStyle = 'rgba(255,60,120,' + Math.min(0.45, flash * 1.4).toFixed(2) + ')'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   }
 
@@ -984,6 +1033,7 @@
   });
 
   soundUi();
+  document.getElementById('saldoIc').innerHTML = cardSvg();
   updateHud();
   if (document.fonts && document.fonts.load) {
     document.fonts.load('8px "Press Start 2P"');
