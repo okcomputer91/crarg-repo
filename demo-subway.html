@@ -119,7 +119,7 @@
 
     <div class="overlay" id="startOv">
       <h2>PRÓXIMA ESTACIÓN:<br>CHAPPELLWEEN</h2>
-      <p>Saltá las valijas, agachate bajo los carteles y agarrá las <strong>SUBE</strong> para no quedarte sin saldo. Meta: <strong>2000 m</strong> - <strong>3 vidas</strong>.</p>
+      <p>Saltá las valijas, agachate bajo los carteles y agarrá las <strong>SUBE</strong> para no quedarte sin saldo. Meta: <strong>2000 m</strong> · <strong>3 vidas</strong>.</p>
       <button class="btn" id="btnPlay">JUGAR</button>
     </div>
 
@@ -168,7 +168,7 @@
     '................DD............'
   ];
 
-  var LABELS = ['RECITAL JUNTAS', 'ESA CONVERSACIÓN', 'SU PERFUME', 'NUESTRA PLAYLIST', 'NOSOTRAS', 'PRIMERA FELIZA JUNTAS', 'SU GATO', 'SU PELO VERDE', 'SU FLEQUILLO', 'SUS OJOS', 'SU EX'];
+  var LABELS = ['RECITAL JUNTAS', 'ESA CONVERSACIÓN', 'SU PERFUME', 'NUESTRA PLAYLIST', 'VIAJE A COLONIA', 'PRIMERA GORREADA', 'SU FLEQUILLO', 'SU INTENSIDAD', 'SU GATO', 'SU PERRO', 'ESE LIBRO', 'SU PELO VERDE', 'SU EX', 'SU CANCIÓN', 'NOSOTRAS'];
   var SUITCASES = [
     { main: '#ff4fa3', light: '#ff9bd0', dark: '#c2185b' },
     { main: '#8b5cf6', light: '#c4b5fd', dark: '#5b21b6' },
@@ -450,8 +450,8 @@
   }
 
   function currentSpeed() {
-    var boost = meters > 1000 ? Math.min(1, (meters - 1000) / 300) : 0;
-    return (80 + 92 * (1 - Math.exp(-meters / 650))) * (1 + 0.22 * boost);
+    var boost = meters > 1000 ? Math.min(1, (meters - 1000) / 600) : 0;
+    return (80 + 92 * (1 - Math.exp(-meters / 650))) * (1 + 0.10 * boost);
   }
 
   function resetGame() {
