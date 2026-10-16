@@ -1,7 +1,7 @@
 import { getStore } from '@netlify/blobs';
 
 const START = Date.UTC(2026, 9, 17, 3, 0, 0);
-const END = Date.UTC(2026, 9, 19, 20, 0, 0);
+const END = Date.UTC(2026, 9, 20, 21, 0, 0);
 const GRACE_MS = 180000;
 const TOP_N = 10;
 const MAX_MEMORIES = 200;
