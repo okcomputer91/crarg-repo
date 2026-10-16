@@ -1493,7 +1493,7 @@
     <div class="sw-lockd">Sábado 17/10 · 00:00 (hora Argentina)</div>
   </div>
 
-  <p class="ruleta-intro">Torneo <strong>EL SUBTE</strong>: corré por el andén y salteá todos los recuerdos de «ELLA» que puedas (y los obstáculos secundarios). Y NO te olvides de cargar la <strong>SUBE</strong>!<br><br>Se suman los recuerdos salteados de todas tus partidas desde el <strong>sábado 17/10 a las 00:00</strong> hasta el <strong>lunes 19/10 a las 17:00</strong> (hora Argentina). Quien más acumule se lleva la <strong>última entrada Chappellween en Feliza</strong>. 🎟️🚇<br><br>Participás con tu usuario de Instagram o X. El scoring parcial se ve al finalizar cada partida y se valida por DM: <a href="https://www.instagram.com/maisonroan/" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> (Instagram) y <a href="https://x.com/maisonroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> (Twitter).<br><br><strong>SI SOS USUARIX TOP 1, NOS ESCRIBÍS Y TE LLEVÁS LA ÚLTIMA.</strong></p>
+  <p class="ruleta-intro">Torneo <strong>EL SUBTE</strong>: corré por el andén y salteá todos los recuerdos de «ELLA» que puedas (y los obstáculos secundarios). Y NO te olvides de cargar la <strong>SUBE</strong>!<br><br>Se suman los recuerdos salteados de todas tus partidas desde el <strong>sábado 17/10 a las 00:00</strong> hasta el <strong>martes 20/10 a las 18:00</strong> (hora Argentina). Quien más acumule se lleva la <strong>última entrada Chappellween en Feliza</strong>. 🎟️🚇<br><br>Participás con tu usuario de Instagram o X. El scoring parcial se ve al finalizar cada partida y se valida por DM: <a href="https://www.instagram.com/maisonroan/" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> (Instagram) y <a href="https://x.com/maisonroan" target="_blank" rel="noopener" style="color:var(--hot-pink);text-decoration:none;">@maisonroan</a> (Twitter).<br><br><strong>SI SOS USUARIX TOP 1, NOS ESCRIBÍS Y TE LLEVÁS LA ÚLTIMA.</strong></p>
 
   <div class="sw-game">
     <div class="sw-prac hidden" id="swPrac"></div>
@@ -1543,7 +1543,7 @@
     <p class="sw-credit">Música: cover chiptune de «The Subway» por Bit Pop Covers. Podés apagarla con el ícono del parlante.</p>
   </div>
 
-  <p class="ruleta-note">Partidas ilimitadas · suman todos tus recuerdos · del sáb 17/10 00:00 al lun 19/10 17:00 (ART).</p>
+  <p class="ruleta-note">Partidas ilimitadas · suman todos tus recuerdos · del sáb 17/10 00:00 al mar 20/10 18:00 (ART).</p>
 </section>
 
 <div class="glitter-line"></div>
@@ -2676,7 +2676,7 @@
   }
 
   var API = '/.netlify/functions/spin';
-  var phase = 'before', skew = 0, T_START = Date.UTC(2026, 9, 17, 3, 0, 0), T_END = Date.UTC(2026, 9, 19, 20, 0, 0), meRec = null, runId = null, pending = null, lastBoard = null;
+  var phase = 'before', skew = 0, T_START = Date.UTC(2026, 9, 17, 3, 0, 0), T_END = Date.UTC(2026, 9, 20, 21, 0, 0), meRec = null, runId = null, pending = null, lastBoard = null;
   var busy = false, realRun = false, practice = true, submitting = false, regNet = 'ig';
   var regEl = document.getElementById('swReg');
   var regInput = document.getElementById('swRegInput');
@@ -2752,13 +2752,13 @@
     btnPlay.textContent = practice ? L('PRACTICAR', 'PRACTICE') : L('JUGAR', 'PLAY');
     if (phase === 'before') {
       startTitle.textContent = L('EL TORNEO ABRE EN', 'TOURNAMENT OPENS IN');
-      startMsg.innerHTML = '<strong>' + untilTxt(T_START - nowMs()) + '</strong><br>' + L('Sáb 17/10 00:00 → Lun 19/10 17:00. Mientras tanto, practicá: no suma puntos.', 'Sat 10/17 00:00 → Mon 10/19 17:00 (ART). Practice meanwhile: no points.');
+      startMsg.innerHTML = '<strong>' + untilTxt(T_START - nowMs()) + '</strong><br>' + L('Sáb 17/10 00:00 → Mar 20/10 18:00. Mientras tanto, practicá: no suma puntos.', 'Sat 10/17 00:00 → Tue 10/20 18:00 (ART). Practice meanwhile: no points.');
     } else if (phase === 'live' && !reg) {
       startTitle.textContent = L('TORNEO EN VIVO', 'TOURNAMENT IS LIVE');
       startMsg.innerHTML = L('Registrá tu usuario de IG o X abajo para sumar recuerdos. Si no, solo práctica.', 'Register your IG or X handle below to score. Otherwise practice only.');
     } else if (phase === 'live') {
       startTitle.textContent = L('PRÓXIMA ESTACIÓN: CHAPPELLWEEN', 'NEXT STOP: CHAPPELLWEEN');
-      startMsg.innerHTML = L('Jugás como <strong>@' + meRec.h + '</strong>. Cada recuerdo que salteás suma, en todas tus partidas. Termina el lun 19/10 17:00.', 'Playing as <strong>@' + meRec.h + '</strong>. Every memory you dodge counts, across all your runs. Ends Mon 10/19 17:00.');
+      startMsg.innerHTML = L('Jugás como <strong>@' + meRec.h + '</strong>. Cada recuerdo que salteás suma, en todas tus partidas. Termina el mar 20/10 18:00.', 'Playing as <strong>@' + meRec.h + '</strong>. Every memory you dodge counts, across all your runs. Ends Tue 10/20 18:00.');
     } else {
       startTitle.textContent = L('TORNEO TERMINADO', 'TOURNAMENT OVER');
       startMsg.innerHTML = L('Mirá la tabla final abajo. Seguí practicando cuando quieras.', 'See the final standings below. Keep practicing anytime.');
