@@ -2705,13 +2705,10 @@
     return e;
   }
   function setLabels() {
-    var t = pending ? L('REINTENTAR', 'RETRY') : (practice ? L('PRACTICAR', 'PRACTICE') : L('RECARGAR SUBE', 'RELOAD SUBE'));
+    var t = pending ? L('REINTENTAR', 'RETRY') : L('RECARGAR SUBE', 'RELOAD SUBE');
     btnRetry.textContent = t; btnAgain.textContent = t;
   }
-  function showPrac() {
-    pracEl.textContent = L('MODO PRÁCTICA · NO SUMA PUNTOS AL TORNEO', 'PRACTICE MODE · DOESN\'T COUNT FOR THE TOURNAMENT');
-    pracEl.classList.toggle('hidden', !practice);
-  }
+  function showPrac() { pracEl.classList.add('hidden'); }
   function rowEl(rank, p, mine) {
     var r = mk('div', 'sw-row' + (mine ? ' me' : ''));
     r.appendChild(mk('span', null, '#' + rank));
@@ -2748,20 +2745,20 @@
     practice = !(phase === 'live' && reg);
     showPrac();
     regEl.classList.toggle('hidden', reg || phase === 'ended');
-    btnPlay.style.display = '';
-    btnPlay.textContent = practice ? L('PRACTICAR', 'PRACTICE') : L('JUGAR', 'PLAY');
+    btnPlay.style.display = phase === 'ended' ? 'none' : '';
+    btnPlay.textContent = phase === 'live' && reg ? L('JUGAR', 'PLAY') : L('REGISTRATE PARA JUGAR', 'REGISTER TO PLAY');
     if (phase === 'before') {
       startTitle.textContent = L('EL TORNEO ABRE EN', 'TOURNAMENT OPENS IN');
-      startMsg.innerHTML = '<strong>' + untilTxt(T_START - nowMs()) + '</strong><br>' + L('Sáb 17/10 00:00 → Mar 20/10 18:00. Mientras tanto, practicá: no suma puntos.', 'Sat 10/17 00:00 → Tue 10/20 18:00 (ART). Practice meanwhile: no points.');
+      startMsg.innerHTML = '<strong>' + untilTxt(T_START - nowMs()) + '</strong><br>' + L('Sáb 17/10 00:00 → Mar 20/10 18:00 (ART).', 'Sat 10/17 00:00 → Tue 10/20 18:00 (ART).');
     } else if (phase === 'live' && !reg) {
       startTitle.textContent = L('TORNEO EN VIVO', 'TOURNAMENT IS LIVE');
-      startMsg.innerHTML = L('Registrá tu usuario de IG o X abajo para sumar recuerdos. Si no, solo práctica.', 'Register your IG or X handle below to score. Otherwise practice only.');
+      startMsg.innerHTML = L('Registrá tu usuario de IG o X abajo para poder jugar y sumar recuerdos.', 'Register your IG or X handle below to play and score memories.');
     } else if (phase === 'live') {
       startTitle.textContent = L('PRÓXIMA ESTACIÓN: CHAPPELLWEEN', 'NEXT STOP: CHAPPELLWEEN');
       startMsg.innerHTML = L('Jugás como <strong>@' + meRec.h + '</strong>. Cada recuerdo que salteás suma, en todas tus partidas. Termina el mar 20/10 18:00.', 'Playing as <strong>@' + meRec.h + '</strong>. Every memory you dodge counts, across all your runs. Ends Tue 10/20 18:00.');
     } else {
       startTitle.textContent = L('TORNEO TERMINADO', 'TOURNAMENT OVER');
-      startMsg.innerHTML = L('Mirá la tabla final abajo. Seguí practicando cuando quieras.', 'See the final standings below. Keep practicing anytime.');
+      startMsg.innerHTML = L('Mirá la tabla final abajo. ¡Gracias por jugar!', 'See the final standings below. Thanks for playing!');
     }
     setLabels();
   }
@@ -2833,7 +2830,10 @@
     if (busy) return;
     musicPrime();
     if (pending) { submitRun(); return; }
-    if (practice) { realRun = false; begin(); return; }
+    if (practice) {
+      if (phase === 'live' && !meRec) { regEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); regInput.focus(); }
+      return;
+    }
     busy = true; btnPlay.disabled = true; btnRetry.disabled = true; btnAgain.disabled = true;
     post({ action: 'start' }).then(function (d) {
       busy = false; btnPlay.disabled = false; btnRetry.disabled = false; btnAgain.disabled = false;
@@ -2854,10 +2854,6 @@
       realRun = false;
       pending = { runId: runId, memories: memories, meters: m };
       submitRun();
-    } else {
-      winMsg.innerHTML = L('Esto fue práctica: no suma al torneo. 🎃', 'This was practice: it doesn\'t count for the tournament. 🎃');
-      setLabels();
-      refreshStatus().then(renderBoard);
     }
   }
 
