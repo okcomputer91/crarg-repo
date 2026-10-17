@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin torneo</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 1.2rem; background: #14072a; color: #fff0f7; font-family: Arial, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.2rem; color: #ffd166; }
+  input, button { font: inherit; padding: .55rem .7rem; border-radius: 6px; border: 1px solid #5b21b6; }
+  input { background: #0d0418; color: #fff; width: 100%; max-width: 280px; }
+  button { background: #ff4fa3; color: #14072a; border-color: #ff4fa3; cursor: pointer; font-weight: bold; }
+  button.ghost { background: transparent; color: #ff9bd0; }
+  button.danger { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
+  th, td { text-align: left; padding: .45rem .3rem; border-bottom: 1px solid rgba(255,255,255,.12); }
+  td.n, th.n { text-align: right; }
+  #msg { min-height: 1.3rem; color: #ff9bd0; }
+  .hidden { display: none; }
+  .tag { font-size: .75rem; color: #ff9bd0; margin-right: .3rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Administración del torneo</h1>
+  <div id="login">
+    <div class="row"><input id="key" type="password" placeholder="Contraseña" autocomplete="current-password"><button id="go">ENTRAR</button></div>
+  </div>
+  <div id="panel" class="hidden">
+    <div class="row">
+      <button id="refresh" class="ghost">ACTUALIZAR</button>
+      <button id="csv">DESCARGAR CSV</button>
+      <button id="resetScores" class="danger">BORRAR TODOS LOS PUNTAJES</button>
+      <button id="resetAll" class="danger">BORRAR TODO (puntajes y usuarios)</button>
+    </div>
+    <div id="msg"></div>
+    <table>
+      <thead><tr><th>Usuario</th><th class="n">Recuerdos</th><th class="n">Partidas</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</main>
+<script>
+  var API = '/.netlify/functions/admin';
+  var secret = '';
+  var msg = document.getElementById('msg');
+  var rowsEl = document.getElementById('rows');
+  var current = [];
+
+  function call(payload) {
+    return fetch(API, { method: 'POST', headers: { 'content-type': 'application/json', 'x-admin-key': secret }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().then(function (d) { d.status = r.status; return d; }); });
+  }
+  function el(tag, text, cls) {
+    var e = document.createElement(tag);
+    if (text != null) e.textContent = text;
+    if (cls) e.className = cls;
+    return e;
+  }
+  function load() {
+    msg.textContent = 'Cargando…';
+    call({ action: 'list' }).then(function (d) {
+      if (d.status === 401) { msg.textContent = 'Contraseña incorrecta.'; show(false); return; }
+      if (d.status === 503) { msg.textContent = 'Falta configurar ADMIN_KEY en Netlify.'; show(false); return; }
+      if (!d.ok) { msg.textContent = 'Error del servidor.'; return; }
+      show(true);
+      current = d.players;
+      msg.textContent = d.players.length + ' usuarios registrados.';
+      rowsEl.innerHTML = '';
+      d.players.forEach(function (p) {
+        var tr = document.createElement('tr');
+        var u = el('td'); u.appendChild(el('span', p.net === 'ig' ? 'IG' : 'X', 'tag')); u.appendChild(document.createTextNode('@' + p.h));
+        tr.appendChild(u);
+        tr.appendChild(el('td', String(p.total), 'n'));
+        tr.appendChild(el('td', String(p.runs), 'n'));
+        var td = el('td', null, 'n');
+        var b = el('button', 'BORRAR', 'danger');
+        b.addEventListener('click', function () {
+          if (!confirm('¿Borrar a @' + p.h + ' (puntaje y registro)?')) return;
+          b.disabled = true;
+          call({ action: 'delete', id: p.id }).then(function (r) { msg.textContent = r.ok ? 'Borrado: @' + p.h : 'No se pudo borrar.'; load(); });
+        });
+        td.appendChild(b); tr.appendChild(td);
+        rowsEl.appendChild(tr);
+      });
+    }).catch(function () { msg.textContent = 'Sin conexión.'; });
+  }
+  function show(ok) {
+    document.getElementById('login').classList.toggle('hidden', ok);
+    document.getElementById('panel').classList.toggle('hidden', !ok);
+  }
+  document.getElementById('go').addEventListener('click', function () {
+    secret = document.getElementById('key').value; load();
+  });
+  document.getElementById('key').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { secret = this.value; load(); }
+  });
+  document.getElementById('refresh').addEventListener('click', load);
+  function cell(v) {
+    var t = String(v == null ? '' : v);
+    return /[",\n;]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+  document.getElementById('csv').addEventListener('click', function () {
+    var lines = ['puesto,red,usuario,recuerdos,partidas,ultima_partida'];
+    current.forEach(function (p, i) {
+      var last = p.last ? new Date(p.last).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) : '';
+      lines.push([i + 1, p.net === 'ig' ? 'Instagram' : 'X', '@' + p.h, p.total, p.runs, last].map(cell).join(','));
+    });
+    var blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'torneo-subte-' + new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  document.getElementById('resetScores').addEventListener('click', function () {
+    if (!confirm('Esto pone en cero a TODAS las personas. ¿Seguro?')) return;
+    call({ action: 'reset-scores' }).then(function (r) { msg.textContent = r.ok ? 'Puntajes borrados.' : 'No se pudo.'; load(); });
+  });
+  document.getElementById('resetAll').addEventListener('click', function () {
+    if (!confirm('Esto borra puntajes Y registros de TODAS las personas. ¿Seguro?')) return;
+    if (!confirm('Última confirmación: no se puede deshacer.')) return;
+    call({ action: 'reset-all' }).then(function (r) { msg.textContent = r.ok ? 'Todo borrado.' : 'No se pudo.'; load(); });
+  });
+</script>
+</body>
+</html>
