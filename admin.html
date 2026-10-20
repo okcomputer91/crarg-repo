@@ -17,6 +17,7 @@
   button.danger { background: #b91c1c; border-color: #b91c1c; color: #fff; }
   button:disabled { opacity: .5; cursor: default; }
   .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; }
+  td.n button { margin: .1rem 0; padding: .35rem .5rem; font-size: .8rem; }
   table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
   th, td { text-align: left; padding: .45rem .3rem; border-bottom: 1px solid rgba(255,255,255,.12); }
   td.n, th.n { text-align: right; }
@@ -85,7 +86,16 @@
           b.disabled = true;
           call({ action: 'delete', id: p.id }).then(function (r) { msg.textContent = r.ok ? 'Borrado: @' + p.h : 'No se pudo borrar.'; load(); });
         });
-        td.appendChild(b); tr.appendChild(td);
+        var pb = el('button', '+/- PUNTOS', 'ghost');
+        pb.addEventListener('click', function () {
+          var v = prompt('Puntos a sumar (o restar con -) para @' + p.h + ' (actual: ' + p.total + '):', '');
+          if (v === null || v.trim() === '') return;
+          var n = parseInt(v, 10);
+          if (!isFinite(n) || n === 0) { msg.textContent = 'Número inválido.'; return; }
+          pb.disabled = true;
+          call({ action: 'adjust', id: p.id, delta: n }).then(function (r) { msg.textContent = r.ok ? '@' + p.h + ' ahora tiene ' + r.total + '.' : 'No se pudo.'; load(); });
+        });
+        td.appendChild(pb); td.appendChild(document.createTextNode(' ')); td.appendChild(b); tr.appendChild(td);
         rowsEl.appendChild(tr);
       });
     }).catch(function () { msg.textContent = 'Sin conexión.'; });
