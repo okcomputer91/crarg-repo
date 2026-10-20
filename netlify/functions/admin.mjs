@@ -22,10 +22,11 @@ async function listKeys(store, prefix) {
 async function updateBoard(store, mutate) {
   for (let i = 0; i < 12; i++) {
     const r = await store.getWithMetadata('board', { type: 'json' });
-    if (!r) return;
-    const data = r.data || { players: {} };
+    const data = (r && r.data) || { players: {} };
     mutate(data);
-    const res = await store.setJSON('board', data, { onlyIfMatch: r.etag });
+    const res = r
+      ? await store.setJSON('board', data, { onlyIfMatch: r.etag })
+      : await store.setJSON('board', data, { onlyIfNew: true });
     if (res && res.modified) return;
     await new Promise(t => setTimeout(t, 20 + Math.random() * 80));
   }
@@ -79,6 +80,22 @@ export default async (req) => {
         if (rec && rec.net === net && rec.h === h) { await store.delete(k); removed++; }
       }
       return json({ ok: true, uidsRemoved: removed });
+    }
+
+    if (body.action === 'adjust') {
+      const id = String(body.id || '');
+      const m = id.match(/^(ig|x):([a-z0-9._]{1,30})$/);
+      const delta = Math.trunc(Number(body.delta));
+      if (!m || !Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 5000) return json({ ok: false, error: 'invalid' }, 400);
+      let total = 0;
+      await updateBoard(store, (b) => {
+        const cur = b.players[id] || { net: m[1], h: m[2], total: 0, runs: 0, at: Date.now() };
+        cur.total = Math.max(0, cur.total + delta);
+        if (delta > 0) cur.at = Date.now();
+        b.players[id] = cur;
+        total = cur.total;
+      });
+      return json({ ok: true, total });
     }
 
     if (body.action === 'reset-scores') {
